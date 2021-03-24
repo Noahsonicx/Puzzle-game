@@ -26,6 +26,11 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
  
+        
+       }
+    public State Move()
+    {
+        //Debug.Log("In Player Move System");
         if (Input.GetKeyDown("w"))
         {
             // Move Player "Up" one block
@@ -50,9 +55,6 @@ public class PlayerMovement : MonoBehaviour
             player_state = new Walk("Right");
             //move_status = true;
         }
-}
-    public State Move()
-    {
         return player_state;
     }
 }

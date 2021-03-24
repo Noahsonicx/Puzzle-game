@@ -12,10 +12,11 @@ public class WorldManager : MonoBehaviour
     private GameObject[,] world_array = new GameObject[x_size, y_size];
     private List<GameObject> enemy_list = new List<GameObject>();
     private GameObject player;
+    private (float, float) player_loc;
     public List<(float, float)> wall_locations = new List<(float, float)>();
     public List<(float, float)> enemy_locations = new List<(float, float)>();
 
-    // Temporary Reference to Player
+    // Temporary Reference to Player Prefab
     public GameObject playerPrefab;
 
     //Other Managers involved
@@ -80,22 +81,23 @@ public class WorldManager : MonoBehaviour
             wall_locations.Add((5.0f, 0.0f));
 
             SpawnWalls();
-
+            //Debug.Log("Finished Loading Walls");
             // Step 2:
             // Add Player into the world
             SpawnPlayer();
-
+            //Debug.Log("Finished Loading Player");
             // Step 3:
             // Add Enemies into the world
             enemy_locations.Add((2.0f, 2.0f));
             enemy_locations.Add((1.0f, 4.0f));
 
             SpawnEnemy();
-
+            //Debug.Log("Finished Loading Enemy");
             level_loaded = true; // Level finished loading. Start Turn System after this.
-
-            TurnSystem();
+            //Debug.Log("Finished Loading Level");
         }
+
+        TurnSystem();
     }
 
     private void SpawnWalls()
@@ -123,8 +125,12 @@ public class WorldManager : MonoBehaviour
     }
     private void SpawnPlayer()
     {
-        world_array[0, 0] = Instantiate(playerPrefab, new Vector2(0, 0), new Quaternion());
-        world_array[0, 0].AddComponent<PlayerMovement>();
+        player_loc = ((4.0f, 1.0f));
+        world_array[(int)player_loc.Item1, (int)player_loc.Item2] = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_loc.Item1, spawn_location.y + player_loc.Item2), new Quaternion());
+        world_array[(int)player_loc.Item1, (int)player_loc.Item2].AddComponent<PlayerMovement>();
+        player = world_array[(int)player_loc.Item1, (int)player_loc.Item2];
+
+
     }
     private void SpawnEnemy()
     {
@@ -151,16 +157,117 @@ public class WorldManager : MonoBehaviour
     }
     private void TurnSystem()
     {
-        while (player_turn)
+        
+        //Debug.Log("In Turn System");
+        if(player_turn)
         {
+            //Debug.Log("Waiting for player input");
             // Wait for player input
-            player_turn = false;
+            State player_state = player.GetComponent<PlayerMovement>().Move();
+            if (player_state == null) return;
+            else
+            {
+                if (PlayerAction(player_state))
+                {
+                    player_state = null;
+                    player_turn = false;
+                    enemy_turn = true;
+                }
+            }
+
         }
 
-        while (enemy_turn)
+        if(enemy_turn)
         {
             // Wait for all enemies to have moved
+
             enemy_turn = false;
+            player_turn = true;
         }
+    }
+
+    private bool PlayerAction(State st)
+    {
+        bool move_success = false;
+        (float, float) new_player_loc = player_loc;
+        
+        switch (st.GetStateName())
+        {
+            case "Walk":
+                Debug.Log("State is Walk");
+                Walk tmp = (Walk)st;
+                switch (tmp.GetDirection())
+                {
+                    case "Up":
+                        //Debug.Log("Dir is Up");
+                        new_player_loc.Item2 += 1.0f;
+                        //Debug.Log("New loc:" + new_player_loc.Item1 + " " + new_player_loc.Item2);
+                        if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null ||
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.name.Contains("Wall") )
+                        {
+                            Debug.Log("Moving Player Up");
+                            player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
+                            world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] = player;
+                            world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
+                            player_loc = new_player_loc;
+                            move_success = true;
+                        }
+                        else Debug.Log("There is a Wall up");
+
+                        break;
+                    case "Down":
+                        //Debug.Log("Dir is Up");
+                        new_player_loc.Item2 -= 1.0f;
+                        //Debug.Log("New loc:" + new_player_loc.Item1 + " " + new_player_loc.Item2);
+                        if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null ||
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.name.Contains("Wall"))
+                        {
+                            Debug.Log("Moving Player Down");
+                            player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
+                            world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] = player;
+                            world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
+                            player_loc = new_player_loc;
+                            move_success = true;
+                        }
+                        else Debug.Log("There is a Wall Down");
+                        break;
+                    case "Left":
+                        //Debug.Log("Dir is Up");
+                        new_player_loc.Item1 -= 1.0f;
+                        //Debug.Log("New loc:" + new_player_loc.Item1 + " " + new_player_loc.Item2);
+                        if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null ||
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.name.Contains("Wall"))
+                        {
+                            Debug.Log("Moving Player Left");
+                            player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
+                            world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] = player;
+                            world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
+                            player_loc = new_player_loc;
+                            move_success = true;
+                        }
+                        else Debug.Log("There is a Wall Left");
+                        break;
+                    case "Right":
+                        //Debug.Log("Dir is Up");
+                        new_player_loc.Item1 += 1.0f;
+                        //Debug.Log("New loc:" + new_player_loc.Item1 + " " + new_player_loc.Item2);
+                        if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null ||
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.name.Contains("Wall"))
+                        {
+                            Debug.Log("Moving Player Right");
+                            player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
+                            world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] = player;
+                            world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
+                            player_loc = new_player_loc;
+                            move_success = true;
+                        }
+                        else Debug.Log("There is a Wall Right");
+                        break;
+                }
+                break;
+        }
+
+        return move_success;
+
     }
 }
