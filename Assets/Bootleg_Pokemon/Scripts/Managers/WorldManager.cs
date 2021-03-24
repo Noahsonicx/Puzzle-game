@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WorldManager : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class WorldManager : MonoBehaviour
     //Other Managers involved
     public GameObject environment_asset_manager;
     public GameObject elemontal_asset_manager;
+    public GameObject moveset_manager;
 
     // Turn Base System Variables
     private bool player_turn = true;
@@ -30,10 +32,21 @@ public class WorldManager : MonoBehaviour
     public GameObject world_origin;
     private Vector3 spawn_location;
 
+    private State player_state = null;
+    private bool enemy_around_player = false;
+    public bool decide_to_attack = false;
+
+    public GameObject AttackButton;
+
+    public GameObject AttackPanel;
+    public GameObject AttackMove1;
+    public GameObject AttackMove2;
+    public GameObject AttackMove3;
+    public GameObject AttackMove4;
+
     // Start is called before the first frame update
     void Start()
     {
- 
     }
 
     // Update is called once per frame
@@ -115,6 +128,7 @@ public class WorldManager : MonoBehaviour
             {
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + loc.Item1, spawn_location.y + loc.Item2);
                 world_array[(int)loc.Item1, (int)loc.Item2] = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                world_array[(int)loc.Item1, (int)loc.Item2].gameObject.tag = "Wall";
             }
         }
         catch(AssetNotInDictionaryException e)
@@ -125,11 +139,16 @@ public class WorldManager : MonoBehaviour
     }
     private void SpawnPlayer()
     {
+        // This should essentially save to file so that character stats are saved between levels and when loading game.
         player_loc = ((4.0f, 1.0f));
         world_array[(int)player_loc.Item1, (int)player_loc.Item2] = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_loc.Item1, spawn_location.y + player_loc.Item2), new Quaternion());
-        world_array[(int)player_loc.Item1, (int)player_loc.Item2].AddComponent<PlayerMovement>();
         player = world_array[(int)player_loc.Item1, (int)player_loc.Item2];
-
+        player.AddComponent<PlayerMovement>();
+        player.GetComponent<PlayerMovement>().LearnMove(0, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Blaze"));
+        player.GetComponent<PlayerMovement>().LearnMove(1, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Pound"));
+        player.GetComponent<PlayerMovement>().LearnMove(2, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Bless"));
+        player.GetComponent<PlayerMovement>().LearnMove(3, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Fire Dance"));
+        player.GetComponent<PlayerMovement>().SetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
 
     }
     private void SpawnEnemy()
@@ -146,6 +165,7 @@ public class WorldManager : MonoBehaviour
             {
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + loc.Item1, spawn_location.y + loc.Item2);
                 GameObject tmp_enemy = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                tmp_enemy.gameObject.tag = "Enemy";
                 //tmp_enemy.AddComponent<EnemyMovement>();
                 world_array[(int)loc.Item1, (int)loc.Item2] = tmp_enemy;
                 enemy_list.Add(tmp_enemy);
@@ -163,15 +183,32 @@ public class WorldManager : MonoBehaviour
         {
             //Debug.Log("Waiting for player input");
             // Wait for player input
-            State player_state = player.GetComponent<PlayerMovement>().Move();
-            if (player_state == null) return;
-            else
+            if (Input.GetKeyDown("w") || Input.GetKeyDown("a") || Input.GetKeyDown("s") || Input.GetKeyDown("d"))
             {
-                if (PlayerAction(player_state))
+                player_state = player.GetComponent<PlayerMovement>().Move();
+
+                if (player_state == null) return;
+                else
                 {
-                    player_state = null;
-                    player_turn = false;
-                    enemy_turn = true;
+                    if (PlayerAction(player_state))
+                    {
+                        
+                        player_state = null;
+                        player_turn = false;
+                        enemy_turn = true;
+                    }
+                }
+            }
+            if (decide_to_attack && enemy_around_player)
+            {
+                Debug.Log("Player is looking to attack");
+                player_state = player.GetComponent<PlayerMovement>().Attack();
+                if(player_state != null)
+                {
+                    if(PlayerAction(player_state))
+                    {
+                        // TODO: Attack the enemy intended
+                    }
                 }
             }
 
@@ -186,6 +223,31 @@ public class WorldManager : MonoBehaviour
         }
     }
 
+    public List<GameObject> GetEnemyAroundPlayer()
+    {
+        Debug.Log("Looking for enemies around player");
+        List<GameObject> enemy_list = new List<GameObject>();
+
+        if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get top enemy
+        if (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get right enemy
+        if (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get left enemy
+        if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get bottom enemy
+
+       
+        if (enemy_list.Count != 0)
+        {
+            Debug.Log("enemy is nearby");
+            enemy_around_player = true;
+            AttackButton.SetActive(true);
+        }
+        else
+        {
+            enemy_around_player = false;
+            AttackButton.SetActive(false);
+            
+        }
+        return enemy_list;
+    }
     private bool PlayerAction(State st)
     {
         bool move_success = false;
@@ -199,11 +261,12 @@ public class WorldManager : MonoBehaviour
                 switch (tmp.GetDirection())
                 {
                     case "Up":
-                        //Debug.Log("Dir is Up");
+                        Debug.Log("Dir is Up");
                         new_player_loc.Item2 += 1.0f;
                         //Debug.Log("New loc:" + new_player_loc.Item1 + " " + new_player_loc.Item2);
-                        if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null ||
-                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.name.Contains("Wall") )
+                        if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null || 
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Wall") &&
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Enemy"))
                         {
                             Debug.Log("Moving Player Up");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
@@ -211,8 +274,15 @@ public class WorldManager : MonoBehaviour
                             world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
                             player_loc = new_player_loc;
                             move_success = true;
+                            decide_to_attack = false;
+
+                            player.GetComponent<PlayerMovement>().SetEnemyList(GetEnemyAroundPlayer());
+
                         }
-                        else Debug.Log("There is a Wall up");
+                        else if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] != null) Debug.Log("Up is not null");
+                        else if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Wall")) Debug.Log("Up is a wall");
+                        else if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Enemy")) Debug.Log("Up is an enemy");
+                        else Debug.Log("Something else broke");
 
                         break;
                     case "Down":
@@ -220,7 +290,8 @@ public class WorldManager : MonoBehaviour
                         new_player_loc.Item2 -= 1.0f;
                         //Debug.Log("New loc:" + new_player_loc.Item1 + " " + new_player_loc.Item2);
                         if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null ||
-                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.name.Contains("Wall"))
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Wall") &&
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Enemy"))
                         {
                             Debug.Log("Moving Player Down");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
@@ -228,6 +299,10 @@ public class WorldManager : MonoBehaviour
                             world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
                             player_loc = new_player_loc;
                             move_success = true;
+                            decide_to_attack = false;
+
+                            player.GetComponent<PlayerMovement>().SetEnemyList(GetEnemyAroundPlayer());
+                            
                         }
                         else Debug.Log("There is a Wall Down");
                         break;
@@ -236,7 +311,8 @@ public class WorldManager : MonoBehaviour
                         new_player_loc.Item1 -= 1.0f;
                         //Debug.Log("New loc:" + new_player_loc.Item1 + " " + new_player_loc.Item2);
                         if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null ||
-                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.name.Contains("Wall"))
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Wall") &&
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Enemy"))
                         {
                             Debug.Log("Moving Player Left");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
@@ -244,6 +320,10 @@ public class WorldManager : MonoBehaviour
                             world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
                             player_loc = new_player_loc;
                             move_success = true;
+                            decide_to_attack = false;
+
+                            player.GetComponent<PlayerMovement>().SetEnemyList(GetEnemyAroundPlayer());
+                          
                         }
                         else Debug.Log("There is a Wall Left");
                         break;
@@ -252,7 +332,8 @@ public class WorldManager : MonoBehaviour
                         new_player_loc.Item1 += 1.0f;
                         //Debug.Log("New loc:" + new_player_loc.Item1 + " " + new_player_loc.Item2);
                         if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null ||
-                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.name.Contains("Wall"))
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Wall") &&
+                            !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].gameObject.tag.Contains("Enemy"))
                         {
                             Debug.Log("Moving Player Right");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
@@ -260,6 +341,10 @@ public class WorldManager : MonoBehaviour
                             world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
                             player_loc = new_player_loc;
                             move_success = true;
+                            decide_to_attack = false;
+
+                            player.GetComponent<PlayerMovement>().SetEnemyList(GetEnemyAroundPlayer());
+                            
                         }
                         else Debug.Log("There is a Wall Right");
                         break;
@@ -269,5 +354,10 @@ public class WorldManager : MonoBehaviour
 
         return move_success;
 
+    }
+
+    public void DecideToAttackSignal(bool d)
+    {
+        decide_to_attack = d;
     }
 }
