@@ -77,7 +77,7 @@ public class PlayerMovement : MonoBehaviour
     {
         MovePanel.SetActive(true);
 
-        for(int i = 0; i < 4; i++)
+        for(int i = 0; i < 4; i++) // Get Move
         {
             if(attacks[i] == null)
             {
@@ -97,9 +97,23 @@ public class PlayerMovement : MonoBehaviour
         move3Text.text = attacks[2].GetMoveName();
         move4Text.text = attacks[3].GetMoveName();
 
-        if (attack_chosen != -1 && enemy_chosen != -1)
+        Moveset move;
+
+        if (attack_chosen != -1)
         {
-            return player_state = new Attack(enemy_list[enemy_chosen], attacks[attack_chosen]);
+            move = attacks[attack_chosen];
+
+            if(move.GetTarget().Equals("self"))
+            {
+                return player_state = new Attack(this.gameObject, move);
+            }
+            else if (move.GetTarget().Equals("Enemy"))
+            {
+                if(enemy_chosen != -1)
+                {
+                    return player_state = new Attack(enemy_list[enemy_chosen], move);
+                }
+            }
         }
         return null;
 
