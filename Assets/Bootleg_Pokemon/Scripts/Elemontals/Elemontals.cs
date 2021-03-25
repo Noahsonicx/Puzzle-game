@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Elemontals : MonoBehaviour
 {
@@ -11,10 +12,20 @@ public class Elemontals : MonoBehaviour
     [SerializeField]
     protected float energyPoints;
     [SerializeField]
-    protected Moveset[] listOfMoves; 
+    protected Moveset[] listOfMoves;
+
+    public TextMeshProUGUI health_text;
 
     public string GetName()
     {
         return elemontal_name;
+    }
+    public float GetHealth()
+    {
+        return healthPoints;
+    }
+    public void ChangeText(string _text)
+    {
+        health_text.text = _text;
     }
 }

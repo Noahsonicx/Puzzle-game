@@ -22,6 +22,13 @@ public class PlayerMovement : MonoBehaviour
     private int attack_chosen = -1;
     private int enemy_chosen = -1;
 
+    //Stats
+    private float max_health;
+    private float current_health;
+
+    //Stat UI
+    TextMeshProUGUI health_text;
+
     //UI element
     public GameObject MovePanel;
     public GameObject Move1;
@@ -41,14 +48,21 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        //Get Base stats here from elemontals
+        max_health = GetComponent<Elemontals>().GetHealth();
+        current_health = max_health;
+
+        //Get Stat UI
+        health_text = GetComponent<Elemontals>().health_text;
+
+        //TODO: Temporary
+        TakeDamage(5);
     }
 
     // Update is called once per frame
     void Update()
     {
-
-        
+        health_text.text = current_health + "/" + max_health;
     }
     public State Move()
     {
@@ -123,10 +137,9 @@ public class PlayerMovement : MonoBehaviour
                 
                 UpdateEnemyTargetUI();
                 //Debug.Log("Ability targets enemy");
-                //Debug.Log("Enemy_chosen: " + enemy_chosen);
+                Debug.Log("Enemy_chosen: " + enemy_chosen);
                 if(enemy_chosen != -1)
                 {
-                    
                     return player_state = new Attack(enemy_list[enemy_chosen], move);
 
                 }
@@ -237,5 +250,28 @@ public class PlayerMovement : MonoBehaviour
     {
         attack_chosen = -1;
         enemy_chosen = -1;
+    }
+    public void SetText()
+    {
+        GetComponent<Elemontals>().ChangeText(current_health + "/" + max_health);
+    }
+    public void TakeDamage(float dmg)
+    {
+        //Debug.Log("Damage Taken: " + dmg);
+        //Debug.Log("Starting Health: " + current_health);
+        current_health -= dmg;
+        SetText();
+        //Debug.Log("Final Health: " + current_health);
+        //if (current_health <= 0) Destroy(this.gameObject);
+    }
+
+    public void HealDamage(float val)
+    {
+        current_health += val;
+        if(current_health > max_health)
+        {
+            current_health = max_health;
+        }
+        SetText();
     }
 }

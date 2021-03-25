@@ -179,6 +179,8 @@ public class WorldManager : MonoBehaviour
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + loc.Item1, spawn_location.y + loc.Item2);
                 GameObject tmp_enemy = Instantiate(prefab, relative_spawn_loc, new Quaternion());
                 tmp_enemy.gameObject.tag = "Enemy";
+                tmp_enemy.AddComponent<EnemyMovement>();
+                tmp_enemy.GetComponent<EnemyMovement>().SetLocation(loc.Item1, loc.Item2);
                 //tmp_enemy.AddComponent<EnemyMovement>();
                 world_array[(int)loc.Item1, (int)loc.Item2] = tmp_enemy;
                 enemy_list.Add(tmp_enemy);
@@ -271,28 +273,28 @@ public class WorldManager : MonoBehaviour
         if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on top");
-            enemy_around_player_list[0] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get top enemy
+            enemy_around_player_list[0] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].gameObject); //Get top enemy
         }
         else enemy_around_player_list[0] = EmptyEnemy; //Get top enemy
 
         if (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on right");
-            enemy_around_player_list[1] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get right enemy
+            enemy_around_player_list[1] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].gameObject); //Get right enemy
         }
         else enemy_around_player_list[1] = EmptyEnemy; //Get right enemy
 
         if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1].gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy to the bottom");
-            enemy_around_player_list[2] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get bottom enemy
+            enemy_around_player_list[2] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2-1].gameObject); //Get bottom enemy
         }
         else enemy_around_player_list[2] = EmptyEnemy; //Get bottom enemy
 
         if (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].gameObject.tag == "Enemy") 
         {
             //Debug.Log("There is an enemy to the left");
-            enemy_around_player_list[3] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get left enemy
+            enemy_around_player_list[3] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].gameObject); //Get left enemy
         }
         else enemy_around_player_list[3] = (EmptyEnemy); //Get left enemy
 
@@ -423,6 +425,49 @@ public class WorldManager : MonoBehaviour
                         else Debug.Log("There is a Wall Right");
                         break;
                 }
+                break;
+
+            case "Attack":
+                Attack atk_state = (Attack)st;
+                if(atk_state.target.gameObject.GetComponent<PlayerMovement>()) 
+                {
+                    Debug.Log("Gameobject name: " + atk_state.target.gameObject.name);
+                    Debug.Log("Target is Player");
+                    switch (atk_state.move.GetStatAffected())
+                    {
+                        case "Health":
+                            Debug.Log("Player Health Affected");
+                            player.GetComponent<PlayerMovement>().HealDamage(atk_state.move.GetValue());
+                            move_success = true;
+                            break;
+                        case "Mana":
+                            Debug.Log("Player Mana Affected");
+                            move_success = true;
+                            break;
+                            // Add more stats later   
+                    }
+                }
+                else
+                {
+                    Debug.Log("Target is Enemy");
+                    switch (atk_state.move.GetStatAffected())
+                    {
+                        case "Health":
+                            Debug.Log("Enemy Health Affected");
+                            atk_state.target.gameObject.GetComponent<EnemyMovement>().TakeDamage(atk_state.move.GetValue());
+                            move_success = true;
+                            break;
+                        case "Mana":
+                            Debug.Log("Enemy Mana Affected");
+                            move_success = true;
+                            break;
+                            // Add more stats later   
+                    }
+                }
+
+                AttackPanel.SetActive(false);
+                target_enemy_panel.SetActive(false);
+                player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                 break;
         }
 
