@@ -17,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private State player_state;
     private Moveset[] attacks = new Moveset[4];
-    public List<GameObject> enemy_list = new List<GameObject>();
+    public GameObject[] enemy_list = new GameObject[4];
 
     private int attack_chosen = -1;
     private int enemy_chosen = -1;
@@ -88,7 +88,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if(attacks[i] == null)
             {
-                Debug.Log("Move is null");
+                //Debug.Log("Move is null");
                 continue;
             }
             Debug.Log(attacks[i].GetMoveName());
@@ -114,17 +114,19 @@ public class PlayerMovement : MonoBehaviour
 
             if(move.GetTarget().Contains("Self"))
             {
-                Debug.Log("Ability targets self");
+                //Debug.Log("Ability targets self");
+           
                 return player_state = new Attack(this.gameObject, move);
             }
             else if (move.GetTarget().Contains("Enemy"))
             {
-                target_enemy_panel.SetActive(true);
-                Debug.Log("Ability targets enemy");
-                Debug.Log("Enemy_chosen: " + enemy_chosen);
+                
+                UpdateEnemyTargetUI();
+                //Debug.Log("Ability targets enemy");
+                //Debug.Log("Enemy_chosen: " + enemy_chosen);
                 if(enemy_chosen != -1)
                 {
-                    UpdateEnemyTargetUI();
+                    
                     return player_state = new Attack(enemy_list[enemy_chosen], move);
 
                 }
@@ -140,9 +142,12 @@ public class PlayerMovement : MonoBehaviour
         attacks[index] = move;
     }
 
-    public void SetEnemyList(List<GameObject> _enemies)
+    public void SetEnemyList(GameObject[] enemies)
     {
-        enemy_list = _enemies;
+        for(int i = 0; i < enemies.Length; i++)
+        {
+            enemy_list[i] = (enemies[i]);
+        }
     }
 
     public void OnAttackButtonClick(int i)
@@ -177,52 +182,60 @@ public class PlayerMovement : MonoBehaviour
         target_e3 = _mb3;
         target_e4 = _mb4;
 
-        Move1.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(0); });
-        Move2.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(1); });
-        Move3.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(2); });
-        Move4.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(3); });
+        target_e1.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(0); });
+        target_e2.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(1); });
+        target_e3.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(2); });
+        target_e4.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(3); });
 
     }
     public void UpdateEnemyTargetUI() 
     {
-        if(enemy_list[0].gameObject.GetComponents<Component>().Length == 1) // Check for Top enemy
+        target_enemy_panel.SetActive(true);
+        if (enemy_list[0].gameObject.name.Contains("EmptyEnemy")) // Check for Top enemy
         {
             target_e1.SetActive(false);
         }
-        else if(enemy_list[0].gameObject.GetComponents<Component>().Length != 1)
+        else
         {
             target_e1.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[0].GetComponent<Elemontals>().GetName() + "\n(Top)"; 
             target_e1.SetActive(true);
         }
         
-        if(enemy_list[1].gameObject.GetComponents<Component>().Length > 1) // Check for Right enemy
+        if(enemy_list[1].gameObject.name.Contains("EmptyEnemy")) // Check for Right enemy
         {
+            Debug.Log("Right Should be off");
             target_e2.SetActive(false);
         }
-        else if(enemy_list[1].gameObject.GetComponents<Component>().Length > 1)
+        else
         {
             target_e2.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[1].GetComponent<Elemontals>().GetName() + "\n(Right)";
             target_e2.SetActive(true);
         }
         
-        if(enemy_list[2].gameObject.GetComponents<Component>().Length == 1)
+        if(enemy_list[2].gameObject.name.Contains("EmptyEnemy"))
         {
             target_e3.SetActive(false);
         }
-        else if(enemy_list[2].gameObject.GetComponents<Component>().Length > 1)
+        else
         {
             target_e3.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[2].GetComponent<Elemontals>().GetName() + "\n(Bottom)";
             target_e3.SetActive(true);
         }
         
-        if(enemy_list[3].gameObject.GetComponents<Component>().Length == 1)
+        if(enemy_list[3].gameObject.name.Contains("EmptyEnemy"))
         {
             target_e4.SetActive(false);
         }
-        else if(enemy_list[3].gameObject.GetComponents<Component>().Length > 1)
+        else
         {
             target_e4.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[3].GetComponent<Elemontals>().GetName() + "\nLeft";
             target_e4.SetActive(true);
         }
+    }
+
+    public void ResetMoveAndEnemy()
+    {
+        attack_chosen = -1;
+        enemy_chosen = -1;
     }
 }
