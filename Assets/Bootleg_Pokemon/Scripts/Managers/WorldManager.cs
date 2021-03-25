@@ -36,13 +36,23 @@ public class WorldManager : MonoBehaviour
     private bool enemy_around_player = false;
     public bool decide_to_attack = false;
 
+    // UI for player action
     public GameObject AttackButton;
 
+    // UI for player's moveset
     public GameObject AttackPanel;
     public GameObject AttackMove1;
     public GameObject AttackMove2;
     public GameObject AttackMove3;
     public GameObject AttackMove4;
+
+    // UI for player's enemy targets
+
+    public GameObject target_enemy_panel;
+    public GameObject target_e1;
+    public GameObject target_e2;
+    public GameObject target_e3;
+    public GameObject target_e4;
 
     // Start is called before the first frame update
     void Start()
@@ -148,7 +158,8 @@ public class WorldManager : MonoBehaviour
         player.GetComponent<PlayerMovement>().LearnMove(1, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Pound"));
         player.GetComponent<PlayerMovement>().LearnMove(2, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Bless"));
         player.GetComponent<PlayerMovement>().LearnMove(3, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Fire Dance"));
-        player.GetComponent<PlayerMovement>().SetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
+        player.GetComponent<PlayerMovement>().SetMovesetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
+        player.GetComponent<PlayerMovement>().SetEnemyTargetUI(target_enemy_panel, target_e1, target_e2, target_e3, target_e4);
 
     }
     private void SpawnEnemy()
@@ -209,6 +220,10 @@ public class WorldManager : MonoBehaviour
                     {
                         // TODO: Attack the enemy intended
                     }
+
+                    player_turn = false;
+                    enemy_turn = true;
+                    decide_to_attack = false;
                 }
             }
 
@@ -229,9 +244,13 @@ public class WorldManager : MonoBehaviour
         List<GameObject> enemy_list = new List<GameObject>();
 
         if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get top enemy
+        else if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].gameObject.tag != "Enemy") enemy_list.Add(new GameObject()); //Get top enemy
         if (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get right enemy
-        if (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get left enemy
+        else if (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].gameObject.tag != "Enemy") enemy_list.Add(new GameObject()); //Get right enemy
         if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get bottom enemy
+        else if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1].gameObject.tag != "Enemy") enemy_list.Add(new GameObject()); //Get bottom enemy
+        if (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].gameObject.tag == "Enemy") enemy_list.Add(world_array[(int)player_loc.Item1, (int)player_loc.Item2].gameObject); //Get left enemy
+        else if (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].gameObject.tag != "Enemy") enemy_list.Add(new GameObject()); //Get left enemy
 
        
         if (enemy_list.Count != 0)

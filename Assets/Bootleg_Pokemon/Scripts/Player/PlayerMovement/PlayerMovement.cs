@@ -29,6 +29,13 @@ public class PlayerMovement : MonoBehaviour
     public GameObject Move3;
     public GameObject Move4;
 
+    // UI for player's enemy targets
+    public GameObject target_enemy_panel;
+    public GameObject target_e1;
+    public GameObject target_e2;
+    public GameObject target_e3;
+    public GameObject target_e4;
+
     //private bool move_status = false; // Has player made a move
 
     // Start is called before the first frame update
@@ -99,19 +106,27 @@ public class PlayerMovement : MonoBehaviour
 
         Moveset move;
 
+        Debug.Log("Attack chosen: " + attack_chosen);
+
         if (attack_chosen != -1)
         {
             move = attacks[attack_chosen];
 
-            if(move.GetTarget().Equals("self"))
+            if(move.GetTarget().Contains("Self"))
             {
+                Debug.Log("Ability targets self");
                 return player_state = new Attack(this.gameObject, move);
             }
-            else if (move.GetTarget().Equals("Enemy"))
+            else if (move.GetTarget().Contains("Enemy"))
             {
+                target_enemy_panel.SetActive(true);
+                Debug.Log("Ability targets enemy");
+                Debug.Log("Enemy_chosen: " + enemy_chosen);
                 if(enemy_chosen != -1)
                 {
+                    UpdateEnemyTargetUI();
                     return player_state = new Attack(enemy_list[enemy_chosen], move);
+
                 }
             }
         }
@@ -140,7 +155,7 @@ public class PlayerMovement : MonoBehaviour
         enemy_chosen = i;
     }
 
-    public void SetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4)
+    public void SetMovesetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4)
     {
         MovePanel = _panel;
         Move1 = _mb1;
@@ -153,5 +168,61 @@ public class PlayerMovement : MonoBehaviour
         Move3.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(2); });
         Move4.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(3); });
 
+    }
+    public void SetEnemyTargetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4)
+    {
+        target_enemy_panel = _panel;
+        target_e1 = _mb1;
+        target_e2 = _mb2;
+        target_e3 = _mb3;
+        target_e4 = _mb4;
+
+        Move1.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(0); });
+        Move2.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(1); });
+        Move3.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(2); });
+        Move4.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(3); });
+
+    }
+    public void UpdateEnemyTargetUI() 
+    {
+        if(enemy_list[0].gameObject.GetComponents<Component>().Length == 1) // Check for Top enemy
+        {
+            target_e1.SetActive(false);
+        }
+        else if(enemy_list[0].gameObject.GetComponents<Component>().Length != 1)
+        {
+            target_e1.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[0].GetComponent<Elemontals>().GetName() + "\n(Top)"; 
+            target_e1.SetActive(true);
+        }
+        
+        if(enemy_list[1].gameObject.GetComponents<Component>().Length > 1) // Check for Right enemy
+        {
+            target_e2.SetActive(false);
+        }
+        else if(enemy_list[1].gameObject.GetComponents<Component>().Length > 1)
+        {
+            target_e2.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[1].GetComponent<Elemontals>().GetName() + "\n(Right)";
+            target_e2.SetActive(true);
+        }
+        
+        if(enemy_list[2].gameObject.GetComponents<Component>().Length == 1)
+        {
+            target_e3.SetActive(false);
+        }
+        else if(enemy_list[2].gameObject.GetComponents<Component>().Length > 1)
+        {
+            target_e3.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[2].GetComponent<Elemontals>().GetName() + "\n(Bottom)";
+            target_e3.SetActive(true);
+        }
+        
+        if(enemy_list[3].gameObject.GetComponents<Component>().Length == 1)
+        {
+            target_e4.SetActive(false);
+        }
+        else if(enemy_list[3].gameObject.GetComponents<Component>().Length > 1)
+        {
+            target_e4.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[3].GetComponent<Elemontals>().GetName() + "\nLeft";
+            target_e4.SetActive(true);
+        }
     }
 }

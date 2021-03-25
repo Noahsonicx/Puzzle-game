@@ -2,12 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Elemontals
+public class Elemontals : MonoBehaviour
 {
     [SerializeField]
-    private float healthPoints;
+    protected string elemontal_name;
     [SerializeField]
-    private float energyPoints;
+    protected float healthPoints;
     [SerializeField]
-    private Moveset[] listOfMoves; 
+    protected float energyPoints;
+    [SerializeField]
+    protected Moveset[] listOfMoves; 
+
+    public string GetName()
+    {
+        return elemontal_name;
+    }
 }
