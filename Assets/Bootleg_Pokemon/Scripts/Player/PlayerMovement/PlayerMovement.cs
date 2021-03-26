@@ -24,10 +24,16 @@ public class PlayerMovement : MonoBehaviour
 
     //Stats
     private float max_health;
+    [SerializeField]
     private float current_health;
+
+    private float max_energy;
+    [SerializeField]
+    private float current_energy;
 
     //Stat UI
     TextMeshProUGUI health_text;
+    TextMeshProUGUI energy_text;
 
     //UI element
     public GameObject MovePanel;
@@ -56,8 +62,13 @@ public class PlayerMovement : MonoBehaviour
         max_health = GetComponent<Elemontals>().GetHealth();
         current_health = max_health;
 
+        max_energy = GetComponent<Elemontals>().GetEnergy();
+        current_energy = max_energy;
+
         //Get Stat UI
         health_text = GetComponent<Elemontals>().health_text;
+        energy_text = GetComponent<Elemontals>().energy_text;
+        energy_text.enabled = true;
 
         //TODO: Temporary
         TakeDamage(5);
@@ -67,6 +78,7 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         health_text.text = current_health + "/" + max_health;
+        energy_text.text = current_energy + "/" + max_energy;
     }
     public State Move()
     {
@@ -130,22 +142,31 @@ public class PlayerMovement : MonoBehaviour
         {
             move = attacks[attack_chosen];
 
-            if(move.GetTarget().Contains("Self"))
+            if (move.GetManaCost() > current_energy)
             {
-                //Debug.Log("Ability targets self");
-           
-                return player_state = new Attack(this.gameObject, move);
+                //TODO: Make UI warning pop up
+                Debug.Log("Not enough mana to use: " + move.GetMoveName());
             }
-            else if (move.GetTarget().Contains("Enemy"))
+            else
             {
-                
-                UpdateEnemyTargetUI();
-                //Debug.Log("Ability targets enemy");
-                Debug.Log("Enemy_chosen: " + enemy_chosen);
-                if(enemy_chosen != -1)
+                if (move.GetTarget().Contains("Self"))
                 {
-                    return player_state = new Attack(enemy_list[enemy_chosen], move);
+                    //Debug.Log("Ability targets self");
 
+                    return player_state = new Attack(this.gameObject, move);
+                }
+                else if (move.GetTarget().Contains("Enemy"))
+                {
+
+                    UpdateEnemyTargetUI();
+                    //Debug.Log("Ability targets enemy");
+                    Debug.Log("Enemy_chosen: " + enemy_chosen);
+                    if (enemy_chosen != -1)
+                    {
+                        current_energy -= move.GetManaCost();
+                        return player_state = new Attack(enemy_list[enemy_chosen], move);
+
+                    }
                 }
             }
         }

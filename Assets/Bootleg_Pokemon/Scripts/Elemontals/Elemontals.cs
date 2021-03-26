@@ -15,6 +15,7 @@ public class Elemontals : MonoBehaviour
     protected Moveset[] listOfMoves;
 
     public TextMeshProUGUI health_text;
+    public TextMeshProUGUI energy_text;
 
     public string GetName()
     {
@@ -23,6 +24,10 @@ public class Elemontals : MonoBehaviour
     public float GetHealth()
     {
         return healthPoints;
+    }
+    public float GetEnergy()
+    {
+        return energyPoints;
     }
     public void ChangeText(string _text)
     {
