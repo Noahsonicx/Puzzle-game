@@ -17,7 +17,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private State player_state;
     private Moveset[] attacks = new Moveset[4];
-    public GameObject[] enemy_list = new GameObject[4];
+    public GameObject[] enemy_list = new GameObject[8];
 
     private int attack_chosen = -1;
     private int enemy_chosen = -1;
@@ -42,6 +42,10 @@ public class PlayerMovement : MonoBehaviour
     public GameObject target_e2;
     public GameObject target_e3;
     public GameObject target_e4;
+    public GameObject target_e5;
+    public GameObject target_e6;
+    public GameObject target_e7;
+    public GameObject target_e8;
 
     //private bool move_status = false; // Has player made a move
 
@@ -187,18 +191,26 @@ public class PlayerMovement : MonoBehaviour
         Move4.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(3); });
 
     }
-    public void SetEnemyTargetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4)
+    public void SetEnemyTargetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4, GameObject _mb5, GameObject _mb6, GameObject _mb7, GameObject _mb8)
     {
         target_enemy_panel = _panel;
         target_e1 = _mb1;
         target_e2 = _mb2;
         target_e3 = _mb3;
         target_e4 = _mb4;
+        target_e5 = _mb5;
+        target_e6 = _mb6;
+        target_e7 = _mb7;
+        target_e8 = _mb8;
 
         target_e1.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(0); });
         target_e2.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(1); });
         target_e3.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(2); });
         target_e4.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(3); });
+        target_e5.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(4); });
+        target_e6.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(5); });
+        target_e7.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(6); });
+        target_e8.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(7); });
 
     }
     public void UpdateEnemyTargetUI() 
@@ -221,7 +233,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            target_e2.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[1].GetComponent<Elemontals>().GetName() + "\n(Right)";
+            target_e2.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[1].GetComponent<Elemontals>().GetName() + "\n(Top-Right)";
             target_e2.SetActive(true);
         }
         
@@ -231,7 +243,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            target_e3.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[2].GetComponent<Elemontals>().GetName() + "\n(Bottom)";
+            target_e3.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[2].GetComponent<Elemontals>().GetName() + "\n(Right)";
             target_e3.SetActive(true);
         }
         
@@ -241,9 +253,51 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            target_e4.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[3].GetComponent<Elemontals>().GetName() + "\nLeft";
+            target_e4.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[3].GetComponent<Elemontals>().GetName() + "\n(Bottom-Right";
             target_e4.SetActive(true);
         }
+
+        if(enemy_list[4].gameObject.name.Contains("EmptyEnemy"))
+        {
+            target_e5.SetActive(false);
+        }
+        else
+        {
+            target_e5.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[4].GetComponent<Elemontals>().GetName() + "\n(Bottom)";
+            target_e5.SetActive(true);
+        }
+
+        if(enemy_list[5].gameObject.name.Contains("EmptyEnemy"))
+        {
+            target_e6.SetActive(false);
+        }
+        else
+        {
+            target_e6.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[5].GetComponent<Elemontals>().GetName() + "\n(Bottom-Left)";
+            target_e6.SetActive(true);
+        }
+
+        if(enemy_list[6].gameObject.name.Contains("EmptyEnemy"))
+        {
+            target_e7.SetActive(false);
+        }
+        else
+        {
+            target_e7.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[6].GetComponent<Elemontals>().GetName() + "\n(Left)";
+            target_e7.SetActive(true);
+        }
+
+        if(enemy_list[7].gameObject.name.Contains("EmptyEnemy"))
+        {
+            target_e8.SetActive(false);
+        }
+        else
+        {
+            target_e8.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[7].GetComponent<Elemontals>().GetName() + "\n(Top-Left)";
+            target_e8.SetActive(true);
+        }
+
+
     }
 
     public void ResetMoveAndEnemy()
