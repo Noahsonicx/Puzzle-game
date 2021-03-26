@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 6134872032878359008}
   - component: {fileID: 4458197520493715656}
   - component: {fileID: -2152040050107759176}
-  - component: {fileID: 8175229419226584185}
   m_Layer: 0
   m_Name: Elemont2
   m_TagString: Untagged
@@ -176,19 +175,6 @@ MonoBehaviour:
   healthPoints: 15
   energyPoints: 0
   health_text: {fileID: 4426444698029529144}
---- !u!114 &8175229419226584185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3069043654917062863}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55e8289f50a21f44bb2ad2b6f51bc163, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  health_text: {fileID: 0}
 --- !u!1 &3620392574554437206
 GameObject:
   m_ObjectHideFlags: 0
