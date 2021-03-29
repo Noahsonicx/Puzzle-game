@@ -66,8 +66,9 @@ public class PlayerMovement : MonoBehaviour
         current_energy = max_energy;
 
         //Get Stat UI
-        health_text = GetComponent<Elemontals>().health_text;
+        health_text = GetComponentInChildren<Elemontals>().health_text;
         energy_text = GetComponent<Elemontals>().energy_text;
+        energy_text.enabled = false;
         energy_text.enabled = true;
 
         //TODO: Temporary
