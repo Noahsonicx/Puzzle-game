@@ -532,4 +532,13 @@ public class WorldManager : MonoBehaviour
     {
         decide_to_attack = d;
     }
+
+    public GameObject GetPlayer()
+    {
+        return player;
+    }
+    public GameObject[] GetEnemyList()
+    {
+        return enemy_list;
+    }
 }

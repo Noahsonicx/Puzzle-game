@@ -55,6 +55,30 @@ public class PlayerMovement : MonoBehaviour
 
     //private bool move_status = false; // Has player made a move
 
+    //Getter Functions
+    public float GetCurrentHealth()
+    {
+        return current_health;
+    }
+    public float GetMaxHealth()
+    {
+        return max_health;
+    }
+
+    public float GetCurrentEnergy()
+    {
+        return current_energy;
+    }
+    
+    public float GetMaxEnergy()
+    {
+        return max_energy;
+    }
+    public Moveset[] GetMoveSet()
+    {
+        return attacks;
+    }
+
     // Start is called before the first frame update
     void Start()
     {

@@ -11,7 +11,18 @@ public class EnemyMovement : MonoBehaviour
     public TextMeshProUGUI health_text;
 
     //private float Mana;
- 
+    public float GetMaxHealth()
+    {
+        return max_health;
+    }
+    public float GetCurrentHealth()
+    {
+        return current_health;
+    }
+    public (float,float) GetLocation()
+    {
+        return location;
+    }
     // Start is called before the first frame update
     void Start()
     {
