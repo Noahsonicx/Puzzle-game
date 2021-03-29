@@ -252,8 +252,25 @@ public class WorldManager : MonoBehaviour
         {
             // Wait for all enemies to have moved
 
+            // -----KIERAN------//
+
+
+            //for (int x = 0; x < x_size; x++)
+            //{
+            //    for (int y = 0; y < y_size; y++)
+            //    {
+            //        if (world_array[x, y].character.gameObject.tag == "Enemy")
+            //        {
+            //            world_array[x, y].
+            //        }
+            //    }
+            //}
+            //enemy_around_player_list = new GameObject[] { EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject };
+
+
             enemy_turn = false;
             player_turn = true;
+
         }
     }
 
