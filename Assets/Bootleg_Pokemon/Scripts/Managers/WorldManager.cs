@@ -35,10 +35,11 @@ public class WorldManager : MonoBehaviour
     public bool decide_to_attack = false;
 
     public GameObject[] enemy_around_player_list;
-    public GameObject EmptyEnemy;
+    public GameObject EmptyObject;
 
     // UI for player action
     public GameObject AttackButton;
+    public GameObject InventoryButton; // TODO: Add Button
 
     // UI for player's moveset
     public GameObject AttackPanel;
@@ -66,10 +67,10 @@ public class WorldManager : MonoBehaviour
         {
             for(int y = 0; y < y_size; y++)
             {
-                world_array[x, y] = new WorldElements();
+                world_array[x, y] = new WorldElements(EmptyObject);
             }
         }
-        enemy_around_player_list = new GameObject[] {EmptyEnemy, EmptyEnemy, EmptyEnemy, EmptyEnemy, EmptyEnemy, EmptyEnemy, EmptyEnemy, EmptyEnemy};
+        enemy_around_player_list = new GameObject[] {EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject};
     }
 
     // Update is called once per frame
@@ -263,7 +264,7 @@ public class WorldManager : MonoBehaviour
 
         for(int i = 0; i < enemy_around_player_list.Length; i++)
         {
-            if(!enemy_around_player_list[i].gameObject.name.Contains("EmptyEnemy"))
+            if(!enemy_around_player_list[i].gameObject.name.Contains("EmptyObject"))
             {
                 count++;
             }
@@ -274,7 +275,7 @@ public class WorldManager : MonoBehaviour
         }
 
         //Debug.Log("Enemy Count around player = " + count);
-        //Debug.Log("EmptyEnemyCount = " + emptycount);
+        //Debug.Log("EmptyObjectCount = " + emptycount);
         return count;
     }
     public void GetEnemyAroundPlayer()
@@ -282,62 +283,62 @@ public class WorldManager : MonoBehaviour
         //Debug.Log("Looking for enemies around player");
 
 
-        if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
+        if (!world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].character.gameObject.name.Equals(EmptyObject.name)&& world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on top");
-            enemy_around_player_list[0] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].character.gameObject); //Get top enemy
+            enemy_around_player_list[0] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].character); //Get top enemy
         }
-        else enemy_around_player_list[0] = EmptyEnemy; //Get top enemy
+        else enemy_around_player_list[0] = EmptyObject; //Get top enemy
 
-        if (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1] != null && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
+        if (!world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.name.Equals(EmptyObject.name)&& world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on top");
-            enemy_around_player_list[1] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject); //Get top enemy
+            enemy_around_player_list[1] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character); //Get top enemy
         }
-        else enemy_around_player_list[1] = EmptyEnemy; //Get top enemy
+        else enemy_around_player_list[1] = EmptyObject; //Get top enemy
 
-        if (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].character.gameObject.tag == "Enemy")
+        if (!world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].character.gameObject.name.Equals(EmptyObject.name)&& world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on right");
-            enemy_around_player_list[2] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].character.gameObject); //Get right enemy
+            enemy_around_player_list[2] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].character); //Get right enemy
         }
-        else enemy_around_player_list[2] = EmptyEnemy; //Get right enemy
+        else enemy_around_player_list[2] = EmptyObject; //Get right enemy
 
-        if (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 - 1] != null && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 - 1].character.gameObject.tag == "Enemy")
+        if (!world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 - 1].character.gameObject.name.Equals(EmptyObject.name)&& world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 - 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on right");
-            enemy_around_player_list[3] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 - 1].character.gameObject); //Get bottom-right enemy
+            enemy_around_player_list[3] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 - 1].character); //Get bottom-right enemy
         }
-        else enemy_around_player_list[3] = EmptyEnemy; //Get bottom-right enemy
-
-        if (world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1] != null && world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1].character.gameObject.tag == "Enemy")
+        else enemy_around_player_list[3] = EmptyObject; //Get bottom-right enemy
+        
+        if (!world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1].character.gameObject.name.Equals(EmptyObject.name) && world_array[(int)player_loc.Item1, (int)player_loc.Item2 - 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy to the bottom");
-            enemy_around_player_list[4] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2-1].character.gameObject); //Get bottom enemy
+            enemy_around_player_list[4] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2-1].character); //Get bottom enemy
         }
-        else enemy_around_player_list[4] = EmptyEnemy; //Get bottom enemy
+        else enemy_around_player_list[4] = EmptyObject; //Get bottom enemy
 
-        if (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 - 1] != null && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 - 1].character.gameObject.tag == "Enemy")
+        if (!world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 - 1].character.gameObject.name.Equals(EmptyObject.name) && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 - 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy to the bottom");
-            enemy_around_player_list[5] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 - 1].character.gameObject); //Get bottom-left enemy
+            enemy_around_player_list[5] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 - 1].character); //Get bottom-left enemy
         }
-        else enemy_around_player_list[5] = EmptyEnemy; //Get bottom-left enemy
+        else enemy_around_player_list[5] = EmptyObject; //Get bottom-left enemy
 
-        if (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2] != null && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].character.gameObject.tag == "Enemy") 
+        if (!world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].character.gameObject.name.Equals(EmptyObject.name) && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].character.gameObject.tag == "Enemy") 
         {
             //Debug.Log("There is an enemy to the left");
-            enemy_around_player_list[6] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].character.gameObject); //Get left enemy
+            enemy_around_player_list[6] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].character); //Get left enemy
         }
-        else enemy_around_player_list[6] = (EmptyEnemy); //Get left enemy
+        else enemy_around_player_list[6] = (EmptyObject); //Get left enemy
 
-        if (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1] != null && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
+        if (!world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character.gameObject.name.Equals(EmptyObject.name) && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy to the left");
-            enemy_around_player_list[7] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character.gameObject); //Get left enemy
+            enemy_around_player_list[7] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character); //Get left enemy
         }
-        else enemy_around_player_list[7] = (EmptyEnemy); //Get left enemy
-
+        else enemy_around_player_list[7] = (EmptyObject); //Get left enemy
+   
 
         if (CountNumberOfEnemiesAroundPlayer() != 0)
         {
@@ -375,7 +376,7 @@ public class WorldManager : MonoBehaviour
                             //Debug.Log("Moving Player Up");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
-                            world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
+                            world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
                             player_loc = new_player_loc;
                             move_success = true;
                             decide_to_attack = false;
@@ -403,7 +404,7 @@ public class WorldManager : MonoBehaviour
                             Debug.Log("Moving Player Down");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
-                            world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
+                            world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
                             player_loc = new_player_loc;
                             move_success = true;
                             decide_to_attack = false;
@@ -427,7 +428,7 @@ public class WorldManager : MonoBehaviour
                             Debug.Log("Moving Player Left");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
-                            world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
+                            world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
                             player_loc = new_player_loc;
                             move_success = true;
                             decide_to_attack = false;
@@ -451,7 +452,7 @@ public class WorldManager : MonoBehaviour
                             Debug.Log("Moving Player Right");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
-                            world_array[(int)player_loc.Item1, (int)player_loc.Item2] = null;
+                            world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
                             player_loc = new_player_loc;
                             move_success = true;
                             decide_to_attack = false;
@@ -494,7 +495,14 @@ public class WorldManager : MonoBehaviour
                     {
                         case "Health":
                             Debug.Log("Enemy Health Affected");
-                            atk_state.target.gameObject.GetComponent<EnemyMovement>().TakeDamage(atk_state.move.GetValue());
+                            if (atk_state.target.gameObject.GetComponent<EnemyMovement>().TakeDamage(atk_state.move.GetValue()))
+                            {
+                                var tmp_x = atk_state.target.GetComponent<EnemyMovement>().location.Item1;
+                                var tmp_y = atk_state.target.GetComponent<EnemyMovement>().location.Item2;
+                                Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
+                                world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
+
+                            }
                             move_success = true;
                             break;
                         case "Mana":

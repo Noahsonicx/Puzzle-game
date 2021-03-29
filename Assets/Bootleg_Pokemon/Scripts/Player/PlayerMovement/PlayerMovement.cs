@@ -238,7 +238,7 @@ public class PlayerMovement : MonoBehaviour
     public void UpdateEnemyTargetUI() 
     {
         target_enemy_panel.SetActive(true);
-        if (enemy_list[0].gameObject.name.Contains("EmptyEnemy")) // Check for Top enemy
+        if (enemy_list[0].gameObject.name.Contains("EmptyObject")) // Check for Top enemy
         {
             target_e1.SetActive(false);
         }
@@ -248,7 +248,7 @@ public class PlayerMovement : MonoBehaviour
             target_e1.SetActive(true);
         }
         
-        if(enemy_list[1].gameObject.name.Contains("EmptyEnemy")) // Check for Right enemy
+        if(enemy_list[1].gameObject.name.Contains("EmptyObject")) // Check for Right enemy
         {
             Debug.Log("Right Should be off");
             target_e2.SetActive(false);
@@ -259,7 +259,7 @@ public class PlayerMovement : MonoBehaviour
             target_e2.SetActive(true);
         }
         
-        if(enemy_list[2].gameObject.name.Contains("EmptyEnemy"))
+        if(enemy_list[2].gameObject.name.Contains("EmptyObject"))
         {
             target_e3.SetActive(false);
         }
@@ -269,7 +269,7 @@ public class PlayerMovement : MonoBehaviour
             target_e3.SetActive(true);
         }
         
-        if(enemy_list[3].gameObject.name.Contains("EmptyEnemy"))
+        if(enemy_list[3].gameObject.name.Contains("EmptyObject"))
         {
             target_e4.SetActive(false);
         }
@@ -279,7 +279,7 @@ public class PlayerMovement : MonoBehaviour
             target_e4.SetActive(true);
         }
 
-        if(enemy_list[4].gameObject.name.Contains("EmptyEnemy"))
+        if(enemy_list[4].gameObject.name.Contains("EmptyObject"))
         {
             target_e5.SetActive(false);
         }
@@ -289,7 +289,7 @@ public class PlayerMovement : MonoBehaviour
             target_e5.SetActive(true);
         }
 
-        if(enemy_list[5].gameObject.name.Contains("EmptyEnemy"))
+        if(enemy_list[5].gameObject.name.Contains("EmptyObject"))
         {
             target_e6.SetActive(false);
         }
@@ -299,7 +299,7 @@ public class PlayerMovement : MonoBehaviour
             target_e6.SetActive(true);
         }
 
-        if(enemy_list[6].gameObject.name.Contains("EmptyEnemy"))
+        if(enemy_list[6].gameObject.name.Contains("EmptyObject"))
         {
             target_e7.SetActive(false);
         }
@@ -309,7 +309,7 @@ public class PlayerMovement : MonoBehaviour
             target_e7.SetActive(true);
         }
 
-        if(enemy_list[7].gameObject.name.Contains("EmptyEnemy"))
+        if(enemy_list[7].gameObject.name.Contains("EmptyObject"))
         {
             target_e8.SetActive(false);
         }

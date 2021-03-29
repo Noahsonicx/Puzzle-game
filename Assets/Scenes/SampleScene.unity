@@ -1060,7 +1060,7 @@ GameObject:
   m_Component:
   - component: {fileID: 513705032}
   m_Layer: 0
-  m_Name: EmptyEnemy
+  m_Name: EmptyObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2251,8 +2251,9 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  EmptyEnemy: {fileID: 513705031}
+  EmptyObject: {fileID: 513705031}
   AttackButton: {fileID: 1249409542}
+  InventoryButton: {fileID: 0}
   AttackPanel: {fileID: 453573036}
   AttackMove1: {fileID: 366001708}
   AttackMove2: {fileID: 131708640}
@@ -2983,6 +2984,7 @@ Transform:
   - {fileID: 1093371435}
   - {fileID: 1950648370}
   - {fileID: 1235960972}
+  - {fileID: 1861633112}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3562,6 +3564,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1826214922}
   m_CullTransparentMesh: 1
+--- !u!1 &1861633111
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1861633112}
+  - component: {fileID: 1861633113}
+  m_Layer: 0
+  m_Name: ItemManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1861633112
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861633111}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1737935311}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1861633113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1861633111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51614a556887e194e9a0eeb7f5a2d32b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item_list: []
+  load_status: 0
 --- !u!1 &1882401718
 GameObject:
   m_ObjectHideFlags: 0

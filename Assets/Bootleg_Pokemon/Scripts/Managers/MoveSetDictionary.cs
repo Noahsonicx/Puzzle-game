@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MoveSetDictionary : MonoBehaviour
 {
-    private List<Moveset> move_list = new List<Moveset>();
+    public List<Moveset> move_list = new List<Moveset>();
     private Dictionary<string, Moveset> move_dictionary = new Dictionary<string, Moveset>();
     private bool load_status = false;
     // Start is called before the first frame update

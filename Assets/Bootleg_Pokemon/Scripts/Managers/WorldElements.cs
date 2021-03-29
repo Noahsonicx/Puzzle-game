@@ -8,9 +8,8 @@ public class WorldElements
     public GameObject item;
     public GameObject character;
 
-    public WorldElements()
+    public WorldElements(GameObject empty)
     {
-        GameObject empty = new GameObject();
         environment = empty;
         item = empty;
         character = empty;
