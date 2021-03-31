@@ -1,7 +1,7 @@
 saveslot1
 DungeonName = Trial
 Enemies on Level
-Elemont2(Clone),1,4,15,15
+Elemont2(Clone),2,2,15,15
 end - enemy
 PlayerStatistics:
 Elemont(Clone),4,1,15,20,0,8
