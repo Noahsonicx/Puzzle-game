@@ -34,7 +34,7 @@ public class LoadSaveManager : MonoBehaviour
         // Get dungeon name:
         line = sr.ReadLine();
         string dungeon_name = line.Substring(line.IndexOf("= ") + 2);
-        Debug.Log(dungeon_name);
+        wm.LoadLevel(dungeon_name);
 
         // Get Enemies List:
         line = sr.ReadLine();
@@ -50,11 +50,12 @@ public class LoadSaveManager : MonoBehaviour
             float enemy_max_hp = float.Parse(enemy_stat[4], CultureInfo.InvariantCulture.NumberFormat);
 
             //TODO: Make a spawn enemy in world manager
-            
+            wm.LoadEnemies(enemy_elemont, enemy_x, enemy_y, enemy_cur_hp, enemy_max_hp);
+            line = sr.ReadLine();
         }
 
         line = sr.ReadLine();
-        if (line != "PlayerStatistics") Debug.LogError("Text Differs for: " + line);
+        if (line != "PlayerStatistics:") Debug.LogError("Text Differs for: " + line);
         line = sr.ReadLine();
         string[] player_stat = line.Split(',');
         string player_elemont = player_stat[0];

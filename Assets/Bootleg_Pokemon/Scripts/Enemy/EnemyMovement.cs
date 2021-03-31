@@ -11,9 +11,18 @@ public class EnemyMovement : MonoBehaviour
     public TextMeshProUGUI health_text;
 
     //private float Mana;
+
+    public void SetMaxHealth(float _max)
+    {
+        max_health = _max;
+    }
     public float GetMaxHealth()
     {
         return max_health;
+    }
+    public void SetCurrentHealth(float _curr)
+    {
+        current_health = _curr;
     }
     public float GetCurrentHealth()
     {

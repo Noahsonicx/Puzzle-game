@@ -44,7 +44,7 @@ public class SaveManager : MonoBehaviour
             sr.WriteLine(enemy_info);
         }
 
-        sr.Write("end - enemy\n");
+        sr.Write("end-enemy\n");
 
         //Save Item List (TODO once items have been implemented)
 
@@ -66,7 +66,11 @@ public class SaveManager : MonoBehaviour
         bool first = true;
         foreach(Moveset m in player.GetMoveSet())
         {
-            if(first) playermove += m.GetMoveName();
+            if (first)
+            {
+                playermove += m.GetMoveName();
+                first = false;
+            }
             else
             {
                 playermove += "," + m.GetMoveName();

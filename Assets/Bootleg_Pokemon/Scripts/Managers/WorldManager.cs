@@ -16,6 +16,23 @@ public class WorldManager : MonoBehaviour
             asset_loc = _loc;
         }
     }
+
+    public struct EnemyConstruct
+    {
+        public string elemontal_key;
+        public (float, float) enemy_loc;
+        public float cur_health;
+        public float max_health;
+        //TODO: Add Moveset once implemented on enemy movement
+
+        public EnemyConstruct(string _key, float _x, float _y, float _cur_h, float _max_h)
+        {
+            elemontal_key = _key;
+            enemy_loc = (_x,_y);
+            cur_health = _cur_h;
+            max_health = _max_h;
+        }
+    }
     // World Settings and Contents
     private static int x_size = 6;
     private static int y_size = 6;
@@ -27,7 +44,7 @@ public class WorldManager : MonoBehaviour
     private GameObject player;
     private (float, float) player_loc;
     public List<EnvironmentContruct> asset_locations = new List<EnvironmentContruct>();
-    public List<(float, float)> enemy_locations = new List<(float, float)>();
+    public List<EnemyConstruct> enemy_locations = new List<EnemyConstruct>();
 
     // Temporary Reference to Player Prefab
     public GameObject playerPrefab;
@@ -107,9 +124,6 @@ public class WorldManager : MonoBehaviour
             //Debug.Log("Finished Loading Player");
             // Step 3:
             // Add Enemies into the world
-            enemy_locations.Add((2.0f, 2.0f));
-            enemy_locations.Add((1.0f, 4.0f));
-
             SpawnEnemy();
             //Debug.Log("Finished Loading Enemy");
             level_loaded = true; // Level finished loading. Start Turn System after this.
@@ -166,21 +180,25 @@ public class WorldManager : MonoBehaviour
     {
         try
         {
-            GameObject prefab = elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetAsset("Elemont2");
-            if (prefab == null)
-            {
-                throw (new AssetNotInDictionaryException("No Asset called 'Elemont2' in Dictionary"));
-            }
+            
 
-            foreach ((float,float) loc in enemy_locations)
+            foreach (EnemyConstruct ec in enemy_locations)
             {
-                Vector2 relative_spawn_loc = new Vector2(spawn_location.x + loc.Item1, spawn_location.y + loc.Item2);
+
+                GameObject prefab = elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetAsset(ec.elemontal_key);
+                if (prefab == null)
+                {
+                    throw (new AssetNotInDictionaryException("No Asset called 'Elemont2' in Dictionary"));
+                }
+
+                Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ec.enemy_loc.Item1, spawn_location.y + ec.enemy_loc.Item2);
                 GameObject tmp_enemy = Instantiate(prefab, relative_spawn_loc, new Quaternion());
                 tmp_enemy.gameObject.tag = "Enemy";
                 tmp_enemy.AddComponent<EnemyMovement>();
-                tmp_enemy.GetComponent<EnemyMovement>().SetLocation(loc.Item1, loc.Item2);
-                //tmp_enemy.AddComponent<EnemyMovement>();
-                world_array[(int)loc.Item1, (int)loc.Item2].character = tmp_enemy;
+                tmp_enemy.GetComponent<EnemyMovement>().SetLocation(ec.enemy_loc.Item1, ec.enemy_loc.Item2);
+                tmp_enemy.GetComponent<EnemyMovement>().SetCurrentHealth(ec.cur_health);
+                tmp_enemy.GetComponent<EnemyMovement>().SetMaxHealth(ec.max_health);
+                world_array[(int)ec.enemy_loc.Item1, (int)ec.enemy_loc.Item2].character = tmp_enemy;
                 enemy_list.Add(tmp_enemy);
             }
         } catch (AssetNotInDictionaryException e)
@@ -578,4 +596,9 @@ public class WorldManager : MonoBehaviour
         }
         
     }
+    public void LoadEnemies(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp)
+    {
+        enemy_locations.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp));
+    }
+   
 }
