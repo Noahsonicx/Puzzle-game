@@ -169,6 +169,7 @@ public class WorldManager : MonoBehaviour
         world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_loc.Item1, spawn_location.y + player_loc.Item2), new Quaternion());
         player = world_array[(int)player_loc.Item1, (int)player_loc.Item2].character;
         player.AddComponent<PlayerMovement>();
+        player.GetComponent<PlayerMovement>().SetPlayerLocation(player_loc);
         player.GetComponent<PlayerMovement>().LearnMove(0, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Blaze"));
         player.GetComponent<PlayerMovement>().LearnMove(1, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Pound"));
         player.GetComponent<PlayerMovement>().LearnMove(2, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Bless"));
@@ -537,7 +538,7 @@ public class WorldManager : MonoBehaviour
     {
         return player;
     }
-    public GameObject[] GetEnemyList()
+    public List<GameObject> GetEnemyList()
     {
         return enemy_list;
     }

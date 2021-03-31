@@ -1,0 +1,9 @@
+saveslot1
+DungeonName = SampleScene
+Enemies on Level
+[Elemont2(Clone),2,2,15,15]
+[Elemont2(Clone),1,4,15,15]
+PlayerStatistics:
+[Elemont(Clone),15,20,8,8]
+PlayerMoveset:
+[Blaze,Pound,Bless,Fire Dance,]

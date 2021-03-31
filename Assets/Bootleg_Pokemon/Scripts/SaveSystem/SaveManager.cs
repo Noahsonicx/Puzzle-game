@@ -21,49 +21,54 @@ public class SaveManager : MonoBehaviour
         
     }
     // Save the state of the player
-    private void Save(string saveslot)
+    public void Save(string filename)
     {
-        using FileStream fs = File.Create(saveslot + "\n");
+        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\Scripts\SaveSystem\" + filename + ".txt";    
+        using FileStream fs = File.Create(path);
         using var sr = new StreamWriter(fs);
 
-        sr.WriteLine(saveslot + "\n");
+        sr.WriteLine(filename);
 
         //Save Dungeon Name:
-        sr.WriteLine("DungeonName = " + SceneManager.GetActiveScene().name + "\n");
+        sr.WriteLine("DungeonName = " + SceneManager.GetActiveScene().name);
 
+        sr.WriteLine("Enemies on Level");
         // Save Enemy List
         foreach(GameObject g in wm.GetEnemyList())
         {
             string enemy_info = "";
             EnemyMovement em = g.GetComponent<EnemyMovement>();
-            enemy_info = "[" + em.gameObject.name;
+            enemy_info = em.gameObject.name;
             enemy_info += "," + em.GetLocation().Item1.ToString() + "," + em.GetLocation().Item2.ToString();
-            enemy_info += "," + em.GetMaxHealth() + "," + em.GetCurrentHealth() + "]\n";
+            enemy_info += "," + em.GetMaxHealth() + "," + em.GetCurrentHealth();
             sr.WriteLine(enemy_info);
         }
+
+        sr.Write("end - enemy");
 
         //Save Item List (TODO once items have been implemented)
 
         //Save PlayerStats
-        sr.WriteLine("PlayerStatistics:\n");
+        sr.WriteLine("PlayerStatistics:");
         PlayerMovement player = wm.GetPlayer().GetComponent<PlayerMovement>();
 
         string player_stats = "";
-        player_stats += "[" + player.gameObject.name; //ElemontalName
+        player_stats += player.gameObject.name; //ElemontalName
+        player_stats += "," + player.GetPlayerLocation().Item1 + "," + player.GetPlayerLocation().Item2;
         player_stats += "," + player.GetCurrentHealth() + "," + player.GetMaxHealth();
         player_stats += "," + player.GetCurrentEnergy() + "," + player.GetMaxEnergy();
+        Debug.Log(player_stats);
         sr.WriteLine(player_stats);
 
-        sr.WriteLine("PlayerMoveset:\n");
+        sr.WriteLine("PlayerMoveset:");
 
-        string playermove = "[";
+        string playermove = "";
         foreach(Moveset m in player.GetMoveSet())
         {
             playermove += m.GetMoveName() + ",";
         }
-        playermove += "]";
 
-        sr.WriteLine(player);
+        sr.WriteLine(playermove);
 
         // Save Player Inventory (TODO: Once player inventory has been implemented)
     }

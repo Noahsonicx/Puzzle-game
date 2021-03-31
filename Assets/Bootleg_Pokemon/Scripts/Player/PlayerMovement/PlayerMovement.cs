@@ -18,6 +18,7 @@ public class PlayerMovement : MonoBehaviour
     private State player_state;
     private Moveset[] attacks = new Moveset[4];
     public GameObject[] enemy_list = new GameObject[8];
+    private (float, float) player_loc;
 
     private int attack_chosen = -1;
     private int enemy_chosen = -1;
@@ -77,6 +78,15 @@ public class PlayerMovement : MonoBehaviour
     public Moveset[] GetMoveSet()
     {
         return attacks;
+    }
+    public (float, float) GetPlayerLocation()
+    {
+        return player_loc;
+    }
+
+    public void SetPlayerLocation((float,float) new_loc)
+    {
+        player_loc = new_loc;
     }
 
     // Start is called before the first frame update
