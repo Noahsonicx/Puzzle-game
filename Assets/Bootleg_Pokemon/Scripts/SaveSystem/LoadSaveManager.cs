@@ -49,7 +49,7 @@ public class LoadSaveManager : MonoBehaviour
             float enemy_cur_hp = float.Parse(enemy_stat[3], CultureInfo.InvariantCulture.NumberFormat);
             float enemy_max_hp = float.Parse(enemy_stat[4], CultureInfo.InvariantCulture.NumberFormat);
 
-            //TODO: Make a spawn enemy in wm
+            //TODO: Make a spawn enemy in world manager
             
         }
 
@@ -63,6 +63,16 @@ public class LoadSaveManager : MonoBehaviour
         float player_cur_hp = float.Parse(player_stat[3], CultureInfo.InvariantCulture.NumberFormat);
         float player_max_hp = float.Parse(player_stat[4], CultureInfo.InvariantCulture.NumberFormat);
 
+        line = sr.ReadLine();
+        if (line != "PlayerMoveset:") Debug.LogError("Text Differs for: " + line);
+        line = sr.ReadLine();
+        string[] player_moves = line.Split(',');
+        string move1 = player_moves[0];
+        string move2 = player_moves[1];
+        string move3 = player_moves[2];
+        string move4 = player_moves[3];
+
+        //TODO: Make a spawn player in world manager
 
         
     }

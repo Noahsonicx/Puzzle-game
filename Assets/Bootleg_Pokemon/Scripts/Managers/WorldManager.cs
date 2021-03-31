@@ -1,18 +1,32 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Globalization;
 using UnityEngine;
 
 public class WorldManager : MonoBehaviour
 {
+    public struct EnvironmentContruct
+    {
+        public string asset_key;
+        public (float, float) asset_loc;
+
+        public EnvironmentContruct(string _key, (float, float) _loc) {
+
+            asset_key = _key;
+            asset_loc = _loc;
+        }
+    }
     // World Settings and Contents
     private static int x_size = 6;
     private static int y_size = 6;
     public bool level_loaded = false;
 
+    public string dungeon_name;
     private WorldElements[,] world_array = new WorldElements[x_size, y_size];
     private List<GameObject> enemy_list = new List<GameObject>();
     private GameObject player;
     private (float, float) player_loc;
-    public List<(float, float)> wall_locations = new List<(float, float)>();
+    public List<EnvironmentContruct> asset_locations = new List<EnvironmentContruct>();
     public List<(float, float)> enemy_locations = new List<(float, float)>();
 
     // Temporary Reference to Player Prefab
@@ -63,13 +77,8 @@ public class WorldManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        for(int x = 0; x < x_size; x++)
-        {
-            for(int y = 0; y < y_size; y++)
-            {
-                world_array[x, y] = new WorldElements(EmptyObject);
-            }
-        }
+        LoadLevel("Trial");
+        
         enemy_around_player_list = new GameObject[] {EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject};
     }
 
@@ -89,34 +98,7 @@ public class WorldManager : MonoBehaviour
             // Add World Objects here (E.g Walls & Creatures (Player and Enemy))
             // Step 1:
             // Add Dungeon Walls (By adding x,y location of each wall as a tuple into wall_location)
-            wall_locations.Add((0.0f, 0.0f));
-            wall_locations.Add((0.0f, 1.0f));
-            wall_locations.Add((0.0f, 2.0f));
-            wall_locations.Add((0.0f, 3.0f));
-            wall_locations.Add((0.0f, 4.0f));
-            wall_locations.Add((0.0f, 5.0f));
-
-            wall_locations.Add((0.0f, 5.0f));
-            wall_locations.Add((1.0f, 5.0f));
-            wall_locations.Add((2.0f, 5.0f));
-            wall_locations.Add((3.0f, 5.0f));
-            wall_locations.Add((4.0f, 5.0f));
-            wall_locations.Add((5.0f, 5.0f));
-
-            wall_locations.Add((5.0f, 0.0f));
-            wall_locations.Add((5.0f, 1.0f));
-            wall_locations.Add((5.0f, 2.0f));
-            wall_locations.Add((5.0f, 3.0f));
-            wall_locations.Add((5.0f, 4.0f));
-            wall_locations.Add((5.0f, 5.0f));
-
-            wall_locations.Add((0.0f, 0.0f));
-            wall_locations.Add((1.0f, 0.0f));
-            wall_locations.Add((2.0f, 0.0f));
-            wall_locations.Add((3.0f, 0.0f));
-            wall_locations.Add((4.0f, 0.0f));
-            wall_locations.Add((5.0f, 0.0f));
-
+            
             SpawnWalls();
             //Debug.Log("Finished Loading Walls");
             // Step 2:
@@ -142,18 +124,20 @@ public class WorldManager : MonoBehaviour
         
         try
         {
-            GameObject prefab = environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetAsset("Wall");
-            if (prefab == null)
+            foreach (EnvironmentContruct ec in asset_locations)
             {
-                throw (new AssetNotInDictionaryException("No Asset called: 'Wall' in Dictionary"));
-            }
- 
-            foreach ((float, float) loc in wall_locations)
-            {
-                Vector2 relative_spawn_loc = new Vector2(spawn_location.x + loc.Item1, spawn_location.y + loc.Item2);
-                world_array[(int)loc.Item1, (int)loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
-                Debug.Log("Spawning wall at location: " + loc.Item1 + "/" + loc.Item2);
-                world_array[(int)loc.Item1, (int)loc.Item2].environment.gameObject.tag = "Wall";
+                GameObject prefab = environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetAsset(ec.asset_key);
+                if (prefab == null)
+                {
+                    throw (new AssetNotInDictionaryException("No Asset called: 'Wall' in Dictionary"));
+                }
+
+                //TODO:
+                Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ec.asset_loc.Item1, spawn_location.y + ec.asset_loc.Item2);
+                world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                Debug.Log("Spawning wall at location: " + ec.asset_loc.Item1 + "/" + ec.asset_loc.Item2);
+                world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
+                
             }
         }
         catch(AssetNotInDictionaryException e)
@@ -291,7 +275,7 @@ public class WorldManager : MonoBehaviour
         }
         else enemy_around_player_list[0] = EmptyObject; //Get top enemy
 
-        if (!world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.name.Equals(EmptyObject.name)&& world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
+        if (!world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.name.Equals(EmptyObject.name) && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on top");
             enemy_around_player_list[1] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character); //Get top enemy
@@ -500,6 +484,7 @@ public class WorldManager : MonoBehaviour
                             {
                                 var tmp_x = atk_state.target.GetComponent<EnemyMovement>().location.Item1;
                                 var tmp_y = atk_state.target.GetComponent<EnemyMovement>().location.Item2;
+                                enemy_list.Remove(world_array[(int)tmp_x, (int)tmp_y].character);
                                 Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
                                 world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
 
@@ -541,5 +526,56 @@ public class WorldManager : MonoBehaviour
     public List<GameObject> GetEnemyList()
     {
         return enemy_list;
+    }
+    public string GetDungeonname()
+    {
+        return dungeon_name;
+    }
+    public void LoadLevel(string level_name)
+    {
+        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\Scripts\Level\" + level_name + ".txt";
+        FileStream fs = File.OpenRead(path);
+        StreamReader sr = new StreamReader(fs);
+
+        string line = sr.ReadLine();
+
+        dungeon_name = line.Substring(line.IndexOf(": ") + 2);
+        //Debug.Log(line);
+        line = sr.ReadLine();
+        string dimension_substring = line.Substring(line.IndexOf(": ") + 2);
+        //Debug.Log("dim substring: " + dimension_substring);
+        string[] dimension = dimension_substring.Split(',');
+
+        x_size = int.Parse(dimension[0], CultureInfo.InvariantCulture.NumberFormat);
+        y_size = int.Parse(dimension[1], CultureInfo.InvariantCulture.NumberFormat);
+        //Debug.Log("dimensions are: " + x_size + " / " + y_size);
+
+        world_array = new WorldElements[x_size, y_size];
+
+        for (int x = 0; x < x_size; x++)
+        {
+            for (int y = 0; y < y_size; y++)
+            {
+                world_array[x, y] = new WorldElements(EmptyObject);
+            }
+        }
+
+        for(int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] asset_line = line.Split(' ');
+            int line_index = 0;
+            for(int x = 0; x < x_size; x++)
+            {
+                //Debug.Log("length of array; " + asset_line.Length);
+                //Debug.Log("at assetline[0]" + asset_line[0]);
+                //Debug.Log("at assetline[1]" + asset_line[1]);
+                //Debug.Log(asset_line[1]);
+                if(asset_line[line_index] != "--") asset_locations.Add(new EnvironmentContruct(asset_line[line_index], (x, y)));
+                line_index++;
+            }
+        }
+        
     }
 }

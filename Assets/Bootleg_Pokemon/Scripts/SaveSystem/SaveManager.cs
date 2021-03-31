@@ -30,7 +30,7 @@ public class SaveManager : MonoBehaviour
         sr.WriteLine(filename);
 
         //Save Dungeon Name:
-        sr.WriteLine("DungeonName = " + SceneManager.GetActiveScene().name);
+        sr.WriteLine("DungeonName = " + wm.GetDungeonname());
 
         sr.WriteLine("Enemies on Level");
         // Save Enemy List
@@ -44,7 +44,7 @@ public class SaveManager : MonoBehaviour
             sr.WriteLine(enemy_info);
         }
 
-        sr.Write("end - enemy");
+        sr.Write("end - enemy\n");
 
         //Save Item List (TODO once items have been implemented)
 
@@ -63,9 +63,14 @@ public class SaveManager : MonoBehaviour
         sr.WriteLine("PlayerMoveset:");
 
         string playermove = "";
+        bool first = true;
         foreach(Moveset m in player.GetMoveSet())
         {
-            playermove += m.GetMoveName() + ",";
+            if(first) playermove += m.GetMoveName();
+            else
+            {
+                playermove += "," + m.GetMoveName();
+            }
         }
 
         sr.WriteLine(playermove);
