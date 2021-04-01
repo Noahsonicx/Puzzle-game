@@ -34,12 +34,17 @@ public class WorldManager : MonoBehaviour
         }
     }
     // World Settings and Contents
-    private static int x_size = 6;
-    private static int y_size = 6;
-    public bool level_loaded = false;
+    private int x_size;
+    private int y_size;
+    
+    //Status Checks
+    [SerializeField] private bool level_loaded = false;
+    [SerializeField] private bool dictionary_ready = false;
+    [SerializeField] private bool load_data_ready = false;
+
 
     public string dungeon_name;
-    private WorldElements[,] world_array = new WorldElements[x_size, y_size];
+    private WorldElements[,] world_array;
     private List<GameObject> enemy_list = new List<GameObject>();
     private GameObject player;
     private (float, float) player_loc;
@@ -93,43 +98,53 @@ public class WorldManager : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
-    {
-        LoadLevel("Trial");
-        
+    {       
         enemy_around_player_list = new GameObject[] {EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject};
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!level_loaded) {
-            while (!environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetDictionaryReadyStatus())
+        if (!level_loaded)
+        {
+            if (!dictionary_ready)
             {
-                Debug.Log("Still Loading Dictionaries");
+                if (!environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetDictionaryReadyStatus()
+                    || !moveset_manager.GetComponent<MoveSetDictionary>().GetDictionaryReadyStatus()
+                    || !elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetDictionaryReadyStatus())
+                {
+                    Debug.Log("Still Loading Dictionaries");
+                }
+                else dictionary_ready = true;
             }
-            
-            // Get the spawn Location
-            spawn_location = world_origin.GetComponent<Transform>().position;
+            else
+            {
+                if (load_data_ready)
+                {
+                    PrepareWorld();
+                    // Get the spawn Location
+                    spawn_location = world_origin.GetComponent<Transform>().position;
 
+                    // Add World Objects here (E.g Walls & Creatures (Player and Enemy))
+                    // Step 1:
+                    // Add Dungeon Walls (By adding x,y location of each wall as a tuple into wall_location)
 
-            // Add World Objects here (E.g Walls & Creatures (Player and Enemy))
-            // Step 1:
-            // Add Dungeon Walls (By adding x,y location of each wall as a tuple into wall_location)
-            
-            SpawnWalls();
-            //Debug.Log("Finished Loading Walls");
-            // Step 2:
-            // Add Player into the world
-            SpawnPlayer();
-            //Debug.Log("Finished Loading Player");
-            // Step 3:
-            // Add Enemies into the world
-            SpawnEnemy();
-            //Debug.Log("Finished Loading Enemy");
-            level_loaded = true; // Level finished loading. Start Turn System after this.
-            //Debug.Log("Finished Loading Level");
+                    SpawnWalls();
+                    //Debug.Log("Finished Loading Walls");
+                    // Step 2:
+                    // Add Player into the world
+                    SpawnPlayer();
+                    //Debug.Log("Finished Loading Player");
+                    // Step 3:
+                    // Add Enemies into the world
+                    SpawnEnemy();
+                    //Debug.Log("Finished Loading Enemy");
+                    level_loaded = true; // Level finished loading. Start Turn System after this.
+                                         //Debug.Log("Finished Loading Level");
+                }
+
+            }
         }
-
         TurnSystem();
     }
 
@@ -148,7 +163,9 @@ public class WorldManager : MonoBehaviour
 
                 //TODO:
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ec.asset_loc.Item1, spawn_location.y + ec.asset_loc.Item2);
-                world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2] == null) Debug.Log("WorldArray is Empty for this slot" + (int)ec.asset_loc.Item1 + "/" + (int)ec.asset_loc.Item2);
+                if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment == null) Debug.Log("Environment of WorldElement is empty");
+                    world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
                 Debug.Log("Spawning wall at location: " + ec.asset_loc.Item1 + "/" + ec.asset_loc.Item2);
                 world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
                 
@@ -166,6 +183,7 @@ public class WorldManager : MonoBehaviour
         player_loc = ((4.0f, 1.0f));
         world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_loc.Item1, spawn_location.y + player_loc.Item2), new Quaternion());
         player = world_array[(int)player_loc.Item1, (int)player_loc.Item2].character;
+        player.name = playerPrefab.name + ": Player";
         player.AddComponent<PlayerMovement>();
         player.GetComponent<PlayerMovement>().SetPlayerLocation(player_loc);
         player.GetComponent<PlayerMovement>().LearnMove(0, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Blaze"));
@@ -178,21 +196,23 @@ public class WorldManager : MonoBehaviour
     }
     private void SpawnEnemy()
     {
+        int enemy_ID = 1;
         try
         {
-            
 
+            if (enemy_locations.Count == 0) Debug.Log("No enemies to spawn");
             foreach (EnemyConstruct ec in enemy_locations)
             {
 
                 GameObject prefab = elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetAsset(ec.elemontal_key);
                 if (prefab == null)
                 {
-                    throw (new AssetNotInDictionaryException("No Asset called 'Elemont2' in Dictionary"));
+                    throw (new AssetNotInDictionaryException("No Asset called '"+ ec.elemontal_key +"' in Dictionary"));
                 }
-
+                
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ec.enemy_loc.Item1, spawn_location.y + ec.enemy_loc.Item2);
                 GameObject tmp_enemy = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                tmp_enemy.name = ec.elemontal_key + "| ID: " + enemy_ID;
                 tmp_enemy.gameObject.tag = "Enemy";
                 tmp_enemy.AddComponent<EnemyMovement>();
                 tmp_enemy.GetComponent<EnemyMovement>().SetLocation(ec.enemy_loc.Item1, ec.enemy_loc.Item2);
@@ -200,6 +220,7 @@ public class WorldManager : MonoBehaviour
                 tmp_enemy.GetComponent<EnemyMovement>().SetMaxHealth(ec.max_health);
                 world_array[(int)ec.enemy_loc.Item1, (int)ec.enemy_loc.Item2].character = tmp_enemy;
                 enemy_list.Add(tmp_enemy);
+                enemy_ID++;
             }
         } catch (AssetNotInDictionaryException e)
         {
@@ -549,6 +570,10 @@ public class WorldManager : MonoBehaviour
     {
         return dungeon_name;
     }
+    public void SetLoadStatusReady()
+    {
+        load_data_ready = true;
+    }
     public void LoadLevel(string level_name)
     {
         string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\Scripts\Level\" + level_name + ".txt";
@@ -566,17 +591,9 @@ public class WorldManager : MonoBehaviour
 
         x_size = int.Parse(dimension[0], CultureInfo.InvariantCulture.NumberFormat);
         y_size = int.Parse(dimension[1], CultureInfo.InvariantCulture.NumberFormat);
-        //Debug.Log("dimensions are: " + x_size + " / " + y_size);
+        Debug.Log("dimensions are: " + x_size + " / " + y_size);
 
         world_array = new WorldElements[x_size, y_size];
-
-        for (int x = 0; x < x_size; x++)
-        {
-            for (int y = 0; y < y_size; y++)
-            {
-                world_array[x, y] = new WorldElements(EmptyObject);
-            }
-        }
 
         for(int y = y_size - 1; y >= 0; y--)
         {
@@ -600,5 +617,50 @@ public class WorldManager : MonoBehaviour
     {
         enemy_locations.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp));
     }
-   
+ 
+    public void PrepareWorld()
+    {
+        world_array = new WorldElements[x_size, y_size];
+        Debug.Log("In Prepare world, x:" + x_size + " & y:" + y_size);
+        for (int x = 0; x < x_size; x++)
+        {
+            for (int y = 0; y < y_size; y++)
+            {
+                world_array[x, y] = new WorldElements(EmptyObject);
+            }
+        }
+    }
+
+    public void ResetWorld()
+    {
+        level_loaded = false;
+        load_data_ready = false;
+        if(world_array != null)
+        {
+            for (int x = 0; x < x_size; x++)
+            {
+                for (int y = 0; y < y_size; y++)
+                {
+                    if(world_array[x,y].character.name != EmptyObject.name)
+                    {
+                        Destroy(world_array[x, y].character.gameObject);
+                        world_array[x, y].character = EmptyObject;
+                    }
+                    if(world_array[x,y].environment.name != EmptyObject.name)
+                    {
+                        Destroy(world_array[x, y].environment.gameObject);
+                        world_array[x, y].environment = EmptyObject;
+                    }
+                    if(world_array[x,y].item.name != EmptyObject.name)
+                    {
+                        Destroy(world_array[x, y].item.gameObject);
+                        world_array[x, y].item = EmptyObject;
+                    }
+                }
+            }
+        }
+        enemy_list.Clear();
+        enemy_locations.Clear();
+        PrepareWorld();
+    }
 }

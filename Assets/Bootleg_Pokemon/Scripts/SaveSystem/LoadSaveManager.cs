@@ -23,6 +23,7 @@ public class LoadSaveManager : MonoBehaviour
 
     public void Load(string filename)
     {
+        wm.ResetWorld();
         string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\Scripts\SaveSystem\" + filename + ".txt";
         using FileStream fs = File.OpenRead(path);
         using var sr = new StreamReader(fs);
@@ -34,6 +35,7 @@ public class LoadSaveManager : MonoBehaviour
         // Get dungeon name:
         line = sr.ReadLine();
         string dungeon_name = line.Substring(line.IndexOf("= ") + 2);
+        Debug.Log("Dungeon name is:" + dungeon_name);
         wm.LoadLevel(dungeon_name);
 
         // Get Enemies List:
@@ -75,6 +77,6 @@ public class LoadSaveManager : MonoBehaviour
 
         //TODO: Make a spawn player in world manager
 
-        
+        wm.SetLoadStatusReady();
     }
 }

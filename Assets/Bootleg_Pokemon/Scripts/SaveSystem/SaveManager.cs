@@ -38,7 +38,9 @@ public class SaveManager : MonoBehaviour
         {
             string enemy_info = "";
             EnemyMovement em = g.GetComponent<EnemyMovement>();
-            enemy_info = em.gameObject.name;
+            string enemy_name = em.gameObject.name.Substring(0,em.gameObject.name.IndexOf("|"));
+            Debug.Log("enemy name in save manager" + enemy_name);
+            enemy_info = enemy_name;
             enemy_info += "," + em.GetLocation().Item1.ToString() + "," + em.GetLocation().Item2.ToString();
             enemy_info += "," + em.GetMaxHealth() + "," + em.GetCurrentHealth();
             sr.WriteLine(enemy_info);
