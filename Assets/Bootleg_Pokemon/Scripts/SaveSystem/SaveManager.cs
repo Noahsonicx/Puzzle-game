@@ -42,7 +42,7 @@ public class SaveManager : MonoBehaviour
             Debug.Log("enemy name in save manager" + enemy_name);
             enemy_info = enemy_name;
             enemy_info += "," + em.GetLocation().Item1.ToString() + "," + em.GetLocation().Item2.ToString();
-            enemy_info += "," + em.GetMaxHealth() + "," + em.GetCurrentHealth();
+            enemy_info += "," + em.GetCurrentHealth() + "," + em.GetMaxHealth();
             sr.WriteLine(enemy_info);
         }
 
@@ -55,8 +55,10 @@ public class SaveManager : MonoBehaviour
         PlayerMovement player = wm.GetPlayer().GetComponent<PlayerMovement>();
 
         string player_stats = "";
-        player_stats += player.gameObject.name; //ElemontalName
+        string player_name = player.gameObject.name.Substring(0, player.gameObject.name.IndexOf("|"));
+        player_stats += player_name; //ElemontalName
         player_stats += "," + player.GetPlayerLocation().Item1 + "," + player.GetPlayerLocation().Item2;
+        Debug.Log("In save manager, player_x: " + player.GetPlayerLocation().Item1 + " player_y: " + player.GetPlayerLocation().Item2);
         player_stats += "," + player.GetCurrentHealth() + "," + player.GetMaxHealth();
         player_stats += "," + player.GetCurrentEnergy() + "," + player.GetMaxEnergy();
         Debug.Log(player_stats);

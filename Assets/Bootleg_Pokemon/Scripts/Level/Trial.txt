@@ -1,4 +1,5 @@
 Dungeon Name: Trial
+Next Dungeon Name: Trial2
 Dungeon Size: 7,7
 w0 w0 w0 w0 w0 w0 w0
 w0 -- -- -- -- w0 w0

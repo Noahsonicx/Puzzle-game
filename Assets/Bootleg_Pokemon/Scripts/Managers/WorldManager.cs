@@ -33,6 +33,24 @@ public class WorldManager : MonoBehaviour
             max_health = _max_h;
         }
     }
+    public struct PlayerConstruct
+    {
+        public string elemontal_key;
+        public (float, float) player_loc;
+        public float cur_health;
+        public float max_health;
+        public float cur_energy;
+        public float max_energy;
+        public PlayerConstruct(string _key, float _x, float _y, float _cur_h, float _max_h, float _cur_e, float _max_e)
+        {
+            elemontal_key = _key;
+            player_loc = (_x, _y);
+            cur_health = _cur_h;
+            max_health = _max_h;
+            cur_energy = _cur_e;
+            max_energy = _max_e;
+        }
+    }
     // World Settings and Contents
     private int x_size;
     private int y_size;
@@ -42,14 +60,17 @@ public class WorldManager : MonoBehaviour
     [SerializeField] private bool dictionary_ready = false;
     [SerializeField] private bool load_data_ready = false;
 
-
     public string dungeon_name;
+    public string next_dungeon_name;
     private WorldElements[,] world_array;
     private List<GameObject> enemy_list = new List<GameObject>();
     private GameObject player;
-    private (float, float) player_loc;
-    public List<EnvironmentContruct> asset_locations = new List<EnvironmentContruct>();
-    public List<EnemyConstruct> enemy_locations = new List<EnemyConstruct>();
+    public (float, float) player_loc;
+
+    //Construct used to hold data when loading
+    public List<EnvironmentContruct> asset_construct = new List<EnvironmentContruct>();
+    public List<EnemyConstruct> enemy_construct = new List<EnemyConstruct>();
+    public PlayerConstruct player_construct;
 
     // Temporary Reference to Player Prefab
     public GameObject playerPrefab;
@@ -85,7 +106,6 @@ public class WorldManager : MonoBehaviour
     public GameObject AttackMove4;
 
     // UI for player's enemy targets
-
     public GameObject target_enemy_panel;
     public GameObject target_e1;
     public GameObject target_e2;
@@ -141,11 +161,16 @@ public class WorldManager : MonoBehaviour
                     //Debug.Log("Finished Loading Enemy");
                     level_loaded = true; // Level finished loading. Start Turn System after this.
                                          //Debug.Log("Finished Loading Level");
+
+                    Debug.Log("In Wm: player c_hp: " + player.GetComponent<PlayerMovement>().GetCurrentHealth());
                 }
 
             }
         }
-        TurnSystem();
+        else
+        {
+            TurnSystem();
+        }
     }
 
     private void SpawnWalls()
@@ -153,7 +178,7 @@ public class WorldManager : MonoBehaviour
         
         try
         {
-            foreach (EnvironmentContruct ec in asset_locations)
+            foreach (EnvironmentContruct ec in asset_construct)
             {
                 GameObject prefab = environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetAsset(ec.asset_key);
                 if (prefab == null)
@@ -180,12 +205,19 @@ public class WorldManager : MonoBehaviour
     private void SpawnPlayer()
     {
         // This should essentially save to file so that character stats are saved between levels and when loading game.
-        player_loc = ((4.0f, 1.0f));
-        world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_loc.Item1, spawn_location.y + player_loc.Item2), new Quaternion());
-        player = world_array[(int)player_loc.Item1, (int)player_loc.Item2].character;
-        player.name = playerPrefab.name + ": Player";
+        //player_loc = ((4.0f, 1.0f));
+        world_array[(int)player_construct.player_loc.Item1, (int)player_construct.player_loc.Item2].character = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_construct.player_loc.Item1, spawn_location.y + player_construct.player_loc.Item2), new Quaternion());
+        player = world_array[(int)player_construct.player_loc.Item1, (int)player_construct.player_loc.Item2].character;
+        player.name = playerPrefab.name + "| Player";
         player.AddComponent<PlayerMovement>();
-        player.GetComponent<PlayerMovement>().SetPlayerLocation(player_loc);
+        Debug.Log("Loc_x: " + player_construct.player_loc.Item1 + " Loc_y" + player_construct.player_loc.Item2);
+        Debug.Log("C_Hp: " + player_construct.cur_health + " M_Hp: " + player_construct.max_health + " C_energy: " + player_construct.cur_energy + " M_energy: " + player_construct.max_energy);
+        player.GetComponent<PlayerMovement>().SetPlayerLocation(player_construct.player_loc);
+        player.GetComponent<PlayerMovement>().SetCurrentHealth(player_construct.cur_health);
+        Debug.Log("C_Hp: " + player.GetComponent<PlayerMovement>().GetCurrentHealth());
+        player.GetComponent<PlayerMovement>().SetMaxHealth(player_construct.max_health);
+        player.GetComponent<PlayerMovement>().SetCurrentEnergy(player_construct.cur_energy);
+        player.GetComponent<PlayerMovement>().SetMaxEnergy(player_construct.max_energy);
         player.GetComponent<PlayerMovement>().LearnMove(0, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Blaze"));
         player.GetComponent<PlayerMovement>().LearnMove(1, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Pound"));
         player.GetComponent<PlayerMovement>().LearnMove(2, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Bless"));
@@ -200,8 +232,8 @@ public class WorldManager : MonoBehaviour
         try
         {
 
-            if (enemy_locations.Count == 0) Debug.Log("No enemies to spawn");
-            foreach (EnemyConstruct ec in enemy_locations)
+            if (enemy_construct.Count == 0) Debug.Log("No enemies to spawn");
+            foreach (EnemyConstruct ec in enemy_construct)
             {
 
                 GameObject prefab = elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetAsset(ec.elemontal_key);
@@ -216,6 +248,7 @@ public class WorldManager : MonoBehaviour
                 tmp_enemy.gameObject.tag = "Enemy";
                 tmp_enemy.AddComponent<EnemyMovement>();
                 tmp_enemy.GetComponent<EnemyMovement>().SetLocation(ec.enemy_loc.Item1, ec.enemy_loc.Item2);
+                Debug.Log("Enemy = CurHealth: " + ec.cur_health);
                 tmp_enemy.GetComponent<EnemyMovement>().SetCurrentHealth(ec.cur_health);
                 tmp_enemy.GetComponent<EnemyMovement>().SetMaxHealth(ec.max_health);
                 world_array[(int)ec.enemy_loc.Item1, (int)ec.enemy_loc.Item2].character = tmp_enemy;
@@ -229,14 +262,15 @@ public class WorldManager : MonoBehaviour
     }
     private void TurnSystem()
     {
-        
+        Debug.Log("In Wm: player c_hp: " + player.GetComponent<PlayerMovement>().GetCurrentHealth());
         //Debug.Log("In Turn System");
-        if(player_turn)
+        if (player_turn)
         {
             //Debug.Log("Waiting for player input");
             // Wait for player input
             if (Input.GetKeyDown("w") || Input.GetKeyDown("a") || Input.GetKeyDown("s") || Input.GetKeyDown("d"))
             {
+                Debug.Log("Input Key pressed");
                 player_state = player.GetComponent<PlayerMovement>().Move();
 
                 if (player_state == null) return;
@@ -253,6 +287,7 @@ public class WorldManager : MonoBehaviour
             }
             if (decide_to_attack && enemy_around_player)
             {
+                Debug.Log("Player attacking");
                 //Debug.Log("Player is looking to attack");
                 player_state = player.GetComponent<PlayerMovement>().Attack();
                 if(player_state != null)
@@ -279,6 +314,7 @@ public class WorldManager : MonoBehaviour
             enemy_turn = false;
             player_turn = true;
         }
+        //Debug.Log("C_Hp: " + player.GetComponent<PlayerMovement>().GetCurrentHealth());
     }
 
     public int CountNumberOfEnemiesAroundPlayer()
@@ -380,7 +416,7 @@ public class WorldManager : MonoBehaviour
     private bool PlayerAction(State st)
     {
         bool move_success = false;
-        (float, float) new_player_loc = player_loc;
+        (float, float) new_player_loc = player.GetComponent<PlayerMovement>().GetPlayerLocation();
         
         switch (st.GetStateName())
         {
@@ -402,6 +438,7 @@ public class WorldManager : MonoBehaviour
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
                             player_loc = new_player_loc;
+                            player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
                             decide_to_attack = false;
 
@@ -430,6 +467,7 @@ public class WorldManager : MonoBehaviour
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
                             player_loc = new_player_loc;
+                            player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
                             decide_to_attack = false;
 
@@ -454,6 +492,7 @@ public class WorldManager : MonoBehaviour
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
                             player_loc = new_player_loc;
+                            player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
                             decide_to_attack = false;
 
@@ -478,6 +517,7 @@ public class WorldManager : MonoBehaviour
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
                             player_loc = new_player_loc;
+                            player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
                             decide_to_attack = false;
 
@@ -557,7 +597,11 @@ public class WorldManager : MonoBehaviour
     {
         decide_to_attack = d;
     }
-
+    public void SetDungeonDimension(int _x, int _y)
+    {
+        x_size = _x;
+        y_size = _y;
+    }
     public GameObject GetPlayer()
     {
         return player;
@@ -569,55 +613,36 @@ public class WorldManager : MonoBehaviour
     public string GetDungeonname()
     {
         return dungeon_name;
+    }public void SetDungeonName(string dungeon)
+    {
+        dungeon_name = dungeon;
+    }
+    public string GetNextDungeonName()
+    {
+        return next_dungeon_name;
+    }
+    public void SetNextDungeonName(string dungeon)
+    {
+        next_dungeon_name = dungeon;
     }
     public void SetLoadStatusReady()
     {
         load_data_ready = true;
     }
-    public void LoadLevel(string level_name)
+    public void LoadEnvironment(string _key, (float, float) _loc)
     {
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\Scripts\Level\" + level_name + ".txt";
-        FileStream fs = File.OpenRead(path);
-        StreamReader sr = new StreamReader(fs);
-
-        string line = sr.ReadLine();
-
-        dungeon_name = line.Substring(line.IndexOf(": ") + 2);
-        //Debug.Log(line);
-        line = sr.ReadLine();
-        string dimension_substring = line.Substring(line.IndexOf(": ") + 2);
-        //Debug.Log("dim substring: " + dimension_substring);
-        string[] dimension = dimension_substring.Split(',');
-
-        x_size = int.Parse(dimension[0], CultureInfo.InvariantCulture.NumberFormat);
-        y_size = int.Parse(dimension[1], CultureInfo.InvariantCulture.NumberFormat);
-        Debug.Log("dimensions are: " + x_size + " / " + y_size);
-
-        world_array = new WorldElements[x_size, y_size];
-
-        for(int y = y_size - 1; y >= 0; y--)
-        {
-            line = sr.ReadLine();
-            Debug.Log("Line is: " + line);
-            string[] asset_line = line.Split(' ');
-            int line_index = 0;
-            for(int x = 0; x < x_size; x++)
-            {
-                //Debug.Log("length of array; " + asset_line.Length);
-                //Debug.Log("at assetline[0]" + asset_line[0]);
-                //Debug.Log("at assetline[1]" + asset_line[1]);
-                //Debug.Log(asset_line[1]);
-                if(asset_line[line_index] != "--") asset_locations.Add(new EnvironmentContruct(asset_line[line_index], (x, y)));
-                line_index++;
-            }
-        }
-        
+        asset_construct.Add(new EnvironmentContruct(_key, _loc));        
     }
     public void LoadEnemies(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp)
     {
-        enemy_locations.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp));
+        enemy_construct.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp));
     }
  
+    public void LoadPlayer(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, float _cur_energy, float _max_energy)
+    {
+        player_construct = new PlayerConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, _cur_energy, _max_energy);
+    }
+
     public void PrepareWorld()
     {
         world_array = new WorldElements[x_size, y_size];
@@ -660,7 +685,7 @@ public class WorldManager : MonoBehaviour
             }
         }
         enemy_list.Clear();
-        enemy_locations.Clear();
+        enemy_construct.Clear();
         PrepareWorld();
     }
 }

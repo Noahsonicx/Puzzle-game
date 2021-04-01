@@ -36,7 +36,6 @@ public class EnemyMovement : MonoBehaviour
     void Start()
     {
         max_health = GetComponent<Elemontals>().GetHealth(); // Could be modified if it scales by level
-        current_health = max_health;
         health_text = GetComponent<Elemontals>().health_text;
     }
 

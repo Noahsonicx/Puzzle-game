@@ -26,7 +26,12 @@ public class PlayerMovement : MonoBehaviour
     //Stats
     private float max_health;
     [SerializeField]
-    private float current_health;
+    private float current_health 
+    {
+        get;
+        set;
+    }
+
 
     private float max_energy;
     [SerializeField]
@@ -61,19 +66,33 @@ public class PlayerMovement : MonoBehaviour
     {
         return current_health;
     }
+    public void SetCurrentHealth(float hp)
+    {
+        current_health = hp;
+    }
     public float GetMaxHealth()
     {
         return max_health;
     }
-
+    public void SetMaxHealth(float hp)
+    {
+        max_health = hp;
+    }
     public float GetCurrentEnergy()
     {
         return current_energy;
     }
-    
+    public void SetCurrentEnergy(float energy)
+    {
+        current_energy = energy;
+    }
     public float GetMaxEnergy()
     {
         return max_energy;
+    }
+    public void SetMaxEnergy(float energy)
+    {
+        max_energy = energy;
     }
     public Moveset[] GetMoveSet()
     {
@@ -94,10 +113,9 @@ public class PlayerMovement : MonoBehaviour
     {
         //Get Base stats here from elemontals
         max_health = GetComponent<Elemontals>().GetHealth();
-        current_health = max_health;
-
+        //current_health = max_health; // This resets current energy no matter what the load file says
         max_energy = GetComponent<Elemontals>().GetEnergy();
-        current_energy = max_energy;
+        //current_energy = max_energy; // This resets current energy no matter what the load file sayss
 
         //Get Stat UI
         health_text = GetComponentInChildren<Elemontals>().health_text;
@@ -105,8 +123,6 @@ public class PlayerMovement : MonoBehaviour
         energy_text.enabled = false;
         energy_text.enabled = true;
 
-        //TODO: Temporary
-        TakeDamage(5);
     }
 
     // Update is called once per frame

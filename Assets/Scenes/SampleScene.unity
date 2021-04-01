@@ -2374,6 +2374,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   level_loaded: 0
+  dictionary_ready: 0
+  load_data_ready: 0
+  dungeon_name: 
+  next_dungeon_name: 
   playerPrefab: {fileID: 4592561848314060659, guid: 62c6d9a3aa2a59f449fe838e930a940e, type: 3}
   environment_asset_manager: {fileID: 1910865032}
   elemontal_asset_manager: {fileID: 1950648369}
@@ -3052,7 +3056,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1701841654}
         m_TargetAssemblyTypeName: LoadSaveManager, Assembly-CSharp
-        m_MethodName: Load
+        m_MethodName: LoadFromSave
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
