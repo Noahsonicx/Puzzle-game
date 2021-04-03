@@ -90,7 +90,9 @@ public class WorldManager : MonoBehaviour
             // Step 1:
             // Add Dungeon Walls (By adding x,y location of each wall as a tuple into wall_location)
             wall_locations.Add((0.0f, 0.0f));
+            
             wall_locations.Add((0.0f, 1.0f));
+            /*
             wall_locations.Add((0.0f, 2.0f));
             wall_locations.Add((0.0f, 3.0f));
             wall_locations.Add((0.0f, 4.0f));
@@ -111,12 +113,14 @@ public class WorldManager : MonoBehaviour
             wall_locations.Add((5.0f, 5.0f));
 
             wall_locations.Add((0.0f, 0.0f));
+            */
             wall_locations.Add((1.0f, 0.0f));
+            /*
             wall_locations.Add((2.0f, 0.0f));
             wall_locations.Add((3.0f, 0.0f));
             wall_locations.Add((4.0f, 0.0f));
             wall_locations.Add((5.0f, 0.0f));
-
+            */
             SpawnWalls();
             //Debug.Log("Finished Loading Walls");
             // Step 2:
@@ -250,24 +254,7 @@ public class WorldManager : MonoBehaviour
 
         if(enemy_turn)
         {
-            // Wait for all enemies to have moved
-
-            // -----KIERAN------//
-
-
-            //for (int x = 0; x < x_size; x++)
-            //{
-            //    for (int y = 0; y < y_size; y++)
-            //    {
-            //        if (world_array[x, y].character.gameObject.tag == "Enemy")
-            //        {
-            //            world_array[x, y].
-            //        }
-            //    }
-            //}
-            //enemy_around_player_list = new GameObject[] { EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject, EmptyObject };
-
-
+            TakeEnemyTurn();
             enemy_turn = false;
             player_turn = true;
 
@@ -548,5 +535,51 @@ public class WorldManager : MonoBehaviour
     public void DecideToAttackSignal(bool d)
     {
         decide_to_attack = d;
+    }
+
+    private void TakeEnemyTurn()
+    {
+        // Wait for all enemies to have moved
+
+        // -----KIERAN------//
+
+        // Checks the enemy - Sight and Coordinates for each enemy
+        float enemySight;
+        (float, float) enemyCoordinates;
+        (float, float) enemyCoordinates_topLeft;
+        string enemyAction;
+
+        WorldElements[,] enemy_world_array;
+        //WorldElements[,] enemy_world_array = new WorldElements[x_size, y_size];
+        foreach (GameObject TempEnemy in enemy_list)
+        {
+            enemySight = TempEnemy.GetComponent<EnemyMovement>().CurrentVision;
+            enemyCoordinates = TempEnemy.GetComponent<EnemyMovement>().Location;
+            
+            // Getting the top left cordinate
+            enemyCoordinates_topLeft.Item1 = enemyCoordinates.Item1 - ((enemySight / 2f) - 1f);     // This will be x  (x,y)
+            enemyCoordinates_topLeft.Item2 = enemyCoordinates.Item2 + ((enemySight / 2f) - 1f);     // This will be y  (x,y)
+
+            enemy_world_array = new WorldElements[(int)enemySight, (int)enemySight];
+
+
+            // Goes through and makes the enemy world array and if out of range will put a wall there
+            for (int x = 0; x < enemySight; x++)            // This will be x  (x,y)
+            {
+                for (int y = (int)enemySight; y < 0; y--)   // This will be y  (x,y)
+                {
+                    if (world_array[x, y] == null)
+                    {
+                        enemy_world_array[x, y].environment.gameObject.tag = "Wall";
+                    }
+                    else if (world_array[x, y] != null)
+                    {
+                        enemy_world_array[x, y] = world_array[x, y];
+                    }
+                }
+            }
+            TempEnemy.GetComponent<EnemyMovement>().Fill_Enemy_array(enemy_world_array);
+            enemyAction = TempEnemy.GetComponent<EnemyMovement>().Take_Turn();
+        }
     }
 }
