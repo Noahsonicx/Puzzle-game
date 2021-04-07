@@ -92,7 +92,7 @@ public class WorldManager : MonoBehaviour
             wall_locations.Add((0.0f, 0.0f));
             
             wall_locations.Add((0.0f, 1.0f));
-            /*
+            
             wall_locations.Add((0.0f, 2.0f));
             wall_locations.Add((0.0f, 3.0f));
             wall_locations.Add((0.0f, 4.0f));
@@ -113,14 +113,14 @@ public class WorldManager : MonoBehaviour
             wall_locations.Add((5.0f, 5.0f));
 
             wall_locations.Add((0.0f, 0.0f));
-            */
+            
             wall_locations.Add((1.0f, 0.0f));
-            /*
+            
             wall_locations.Add((2.0f, 0.0f));
             wall_locations.Add((3.0f, 0.0f));
             wall_locations.Add((4.0f, 0.0f));
             wall_locations.Add((5.0f, 0.0f));
-            */
+            
             SpawnWalls();
             //Debug.Log("Finished Loading Walls");
             // Step 2:
@@ -541,45 +541,87 @@ public class WorldManager : MonoBehaviour
     {
         // Wait for all enemies to have moved
 
-        // -----KIERAN------//
+        // ----- KIERAN ----- //
+        foreach (GameObject TempEnemy in enemy_list)
+        {
+            THIS_Enemy_TakeTurn(TempEnemy);
+        }
+    }
+
+    // This will run the turn for the enemy placed into the method
+    private void THIS_Enemy_TakeTurn(GameObject _Enemy)
+    {
+        // ----- KIERAN ----- //
+        THIS_Enemy_PopulateMap(_Enemy);
+        THIS_Enemy_MakeAction(_Enemy);
+
+
+    }
+
+    // This will populate the internal map for the inputed enemy
+    private void THIS_Enemy_PopulateMap(GameObject _Enemy)
+    {
+        // ----- KIERAN ----- //
 
         // Checks the enemy - Sight and Coordinates for each enemy
         float enemySight;
         (float, float) enemyCoordinates;
-        (float, float) enemyCoordinates_topLeft;
-        string enemyAction;
+        (float, float) enemyCoordinates_bottomLeft;
 
         WorldElements[,] enemy_world_array;
-        //WorldElements[,] enemy_world_array = new WorldElements[x_size, y_size];
-        foreach (GameObject TempEnemy in enemy_list)
+
+        enemySight = _Enemy.GetComponent<EnemyMovement>().CurrentVision;
+        enemyCoordinates = _Enemy.GetComponent<EnemyMovement>().Location;
+
+        // Getting the bottom left cordinate
+        enemyCoordinates_bottomLeft.Item1 = enemyCoordinates.Item1 - ((enemySight / 2f) - 0.5f);     // This will be x  (x,y)
+        enemyCoordinates_bottomLeft.Item2 = enemyCoordinates.Item2 - ((enemySight / 2f) - 0.5f);     // This will be y  (x,y)
+
+        enemy_world_array = new WorldElements[(int)enemySight, (int)enemySight];
+
+        // Goes through and makes the enemy world array and if out of range will put a wall there
+        for (int x = 0; x < enemySight; x++)            // This will be x  (x,y)
         {
-            enemySight = TempEnemy.GetComponent<EnemyMovement>().CurrentVision;
-            enemyCoordinates = TempEnemy.GetComponent<EnemyMovement>().Location;
-            
-            // Getting the top left cordinate
-            enemyCoordinates_topLeft.Item1 = enemyCoordinates.Item1 - ((enemySight / 2f) - 1f);     // This will be x  (x,y)
-            enemyCoordinates_topLeft.Item2 = enemyCoordinates.Item2 + ((enemySight / 2f) - 1f);     // This will be y  (x,y)
-
-            enemy_world_array = new WorldElements[(int)enemySight, (int)enemySight];
-
-
-            // Goes through and makes the enemy world array and if out of range will put a wall there
-            for (int x = 0; x < enemySight; x++)            // This will be x  (x,y)
+            for (int y = 0; y < enemySight; y++)        // This will be y  (x,y)
             {
-                for (int y = (int)enemySight; y < 0; y--)   // This will be y  (x,y)
+
+                // !!!!!!!!!!!!! ------------------------ NEED HELP ------------------------ !!!!!!!!!!!!!
+                // Want to populate the enemy_world_array with a wall if the location is out of bounds.
+
+                // If it is not in range will put a wall there.
+                if (x < 0 || x >= x_size || y < 0 || y >= y_size)
                 {
-                    if (world_array[x, y] == null)
+                    GameObject enemy_WallPrefab = environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetAsset("Wall");
+                    if (enemy_WallPrefab == null)
                     {
-                        enemy_world_array[x, y].environment.gameObject.tag = "Wall";
+                        throw (new AssetNotInDictionaryException("No Asset called: 'Wall' in Dictionary"));
                     }
-                    else if (world_array[x, y] != null)
-                    {
-                        enemy_world_array[x, y] = world_array[x, y];
-                    }
+
+                    Vector2 enemy_Wall_spawn_loc = new Vector2(x, y);
+                    enemy_world_array[x, y].environment = Instantiate(enemy_WallPrefab, enemy_Wall_spawn_loc, new Quaternion());
+                    enemy_world_array[x, y].environment.gameObject.tag = "Wall";
+                }
+
+                // If it is in range will copy world_array over to enemy_world_array.
+                else
+                {
+                    enemy_world_array[x, y] = world_array[(int)(enemyCoordinates_bottomLeft.Item1 + x), (int)(enemyCoordinates_bottomLeft.Item1 + y)];
                 }
             }
-            TempEnemy.GetComponent<EnemyMovement>().Fill_Enemy_array(enemy_world_array);
-            enemyAction = TempEnemy.GetComponent<EnemyMovement>().Take_Turn();
+            _Enemy.GetComponent<EnemyMovement>().Fill_Enemy_array(enemy_world_array);
         }
+    }
+
+    private void THIS_Enemy_MakeAction(GameObject _Enemy)
+    {
+        string THIS_enemyAction;
+
+        // This will produce one of the following strings:
+        //      "Attack"                                    - If the player IS in attack range of THIS enemy.
+        //      "Move " + "Left" / "Down" / "Right" / "Up"  - If the player IS NOT in attack range, AND IS in vision range of THIS enemy, AND the enemy CAN move towards them).
+        //      "Cant Move"                                 - If the player IS NOT in attack range, AND IS in vision range of THIS enemy, AND the enemy CAN NOT move towards them).
+        //      "Pass"                                      - If the player IS NOT in attack range, AND IS NOT in vision range of THIS enemy.
+        THIS_enemyAction = _Enemy.GetComponent<EnemyMovement>().Take_Turn();
+
     }
 }
