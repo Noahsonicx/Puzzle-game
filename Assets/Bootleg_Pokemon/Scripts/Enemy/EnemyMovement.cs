@@ -99,7 +99,6 @@ public class EnemyMovement : MonoBehaviour
             return Movedirection;
         }
         // Third if neither the enemy will either rest or pass turn
-
         return "Pass";
     }
     public bool CheckAttack((float, float) _enemy_position)
@@ -112,6 +111,7 @@ public class EnemyMovement : MonoBehaviour
         // Cycle through each location.
         for (int x = 0; x < attackRange; x++)            // This will be x  (x,y).
         {
+            // think this should be for "(int y = 0; y <= attackRange; y++)"
             for (int y = (int)attackRange; y < 0; y--)   // This will be y  (x,y).
             {
                 // If there is a player in this location this enemy will attack it.
@@ -130,26 +130,107 @@ public class EnemyMovement : MonoBehaviour
 
     public string CheckPlayerInRange((float, float) _enemy_position)
     {
-        //// This will get the current position on the enemy grid
-        //(float, float) enemy_loacation;
-        //enemy_loacation.Item1 = 0f;
-        //enemy_loacation.Item2 = 0f;
-        //// Cycle through each location.
-        //for (int x = 0; x < attackRange; x++)            // This will be x  (x,y).
-        //{
-        //    for (int y = (int)attackRange; y < 0; y--)   // This will be y  (x,y).
-        //    {
-        //        // If there is a player in this location this enemy will attack it.
-        //        if (Enemy_Array[(int)enemy_attackloacation.Item1, (int)enemy_attackloacation.Item2].environment.gameObject.tag == "Player")
-        //        {
-        //            // Will attack player
-        //            return true;
-        //        }
-        //        enemy_attackloacation.Item1++;
-        //    }
-        //    enemy_attackloacation.Item1 -= attackRange;
-        //    enemy_attackloacation.Item2++;
-        //}
+        // This will get the current position of the the player on enemy grid
+        (float, float) player_loacation;
+        player_loacation.Item1 = 0f;
+        player_loacation.Item2 = 0f;
+
+        // This divides up the quadrant into 4 squares disreguarding exactly up and down, left and right.
+        int quadrantSize = (int)((currentVision / 2f)-0.5f);
+
+        // Cycle through each quadrand and coloumn to see if the player is there and thus move to them.
+
+        // Starting with bottom left.
+        for (int x = 0; x < quadrantSize; x++)            // This will be x  (x,y).
+        {
+            for (int y = 0; y < quadrantSize; y++)   // This will be y  (x,y).
+            {
+                // If there is a player in the bottom left location this enemy will attack it.
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+                {
+                    // Check location at left and down to be either an enemy or wall.
+                    // If both free do one randomly if enemy below or left
+                    if ((Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2] == null &&
+                        !Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2].environment.gameObject.tag.Contains("Wall") ||
+                        !Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2].environment.gameObject.tag.Contains("Enemy")) &&
+                        (Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1] == null &&
+                        !Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1].environment.gameObject.tag.Contains("Wall") ||
+                        !Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1].environment.gameObject.tag.Contains("Enemy")))
+                    {
+                        if (Random.value < .5)
+                        {
+                            return "Move Left";
+                        }
+                        else
+                        {
+                            return "Move Down";
+                        }
+                    }
+                    // If enemy below
+                    else if ((Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2] == null &&
+                        !Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2].environment.gameObject.tag.Contains("Wall") ||
+                        !Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2].environment.gameObject.tag.Contains("Enemy")) &&
+                        (Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1] != null &&
+                        Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1].environment.gameObject.tag.Contains("Wall") ||
+                        Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1].environment.gameObject.tag.Contains("Enemy")))
+                    {
+                        return "Move Left";
+                    }
+                    else if ((Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2] != null &&
+                        Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2].environment.gameObject.tag.Contains("Wall") ||
+                        Enemy_Array[(int)(_enemy_position.Item1 - 1), (int)_enemy_position.Item2].environment.gameObject.tag.Contains("Enemy")) &&
+                        (Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1] == null &&
+                        !Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1].environment.gameObject.tag.Contains("Wall") ||
+                        !Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1].environment.gameObject.tag.Contains("Enemy")))
+                    {
+                        return "Move Down";
+                    }
+                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will pass (what ever that will be)
+                    else
+                    {
+                        return "Pass";
+                    }
+
+                }
+                player_loacation.Item1++;
+            }
+            player_loacation.Item1 -= quadrantSize;
+            player_loacation.Item2++;
+        }
+
+
+        // Now check for directly below.
+
+        player_loacation.Item1 = (quadrantSize);
+        player_loacation.Item2 = (0f);
+        
+        // Now below the enemy.
+            for (int y = 0; y <= quadrantSize; y++)         // This will be y  (x,y).
+            {
+                // If there is a player in the bottom left location this enemy will attack it.
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+                {
+                    // Check location down to be either an enemy or wall and if free it will move down.
+                    if ((Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1] == null &&
+                        !Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1].environment.gameObject.tag.Contains("Wall") ||
+                        !Enemy_Array[(int)(_enemy_position.Item1), (int)_enemy_position.Item2 - 1].environment.gameObject.tag.Contains("Enemy")))
+                    {
+                            return "Move Down";
+                    }
+                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will pass (what ever that will be)
+                    else
+                    {
+                        return "Pass";
+                    }
+
+                }
+                player_loacation.Item2++;
+            }
+        }
+
+
+
+
         return "None";
     }
 }
