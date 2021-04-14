@@ -41,7 +41,11 @@ public class WorldManager : MonoBehaviour
         public float max_health;
         public float cur_energy;
         public float max_energy;
-        public PlayerConstruct(string _key, float _x, float _y, float _cur_h, float _max_h, float _cur_e, float _max_e)
+        public string move1;
+        public string move2;
+        public string move3;
+        public string move4;
+        public PlayerConstruct(string _key, float _x, float _y, float _cur_h, float _max_h, float _cur_e, float _max_e, string m1, string m2, string m3, string m4)
         {
             elemontal_key = _key;
             player_loc = (_x, _y);
@@ -49,6 +53,10 @@ public class WorldManager : MonoBehaviour
             max_health = _max_h;
             cur_energy = _cur_e;
             max_energy = _max_e;
+            move1 = m1;
+            move2 = m2;
+            move3 = m3;
+            move4 = m4;
         }
     }
     // World Settings and Contents
@@ -161,8 +169,6 @@ public class WorldManager : MonoBehaviour
                     //Debug.Log("Finished Loading Enemy");
                     level_loaded = true; // Level finished loading. Start Turn System after this.
                                          //Debug.Log("Finished Loading Level");
-
-                    Debug.Log("In Wm: player c_hp: " + player.GetComponent<PlayerMovement>().GetCurrentHealth());
                 }
 
             }
@@ -205,25 +211,22 @@ public class WorldManager : MonoBehaviour
     private void SpawnPlayer()
     {
         // This should essentially save to file so that character stats are saved between levels and when loading game.
-        //player_loc = ((4.0f, 1.0f));
         world_array[(int)player_construct.player_loc.Item1, (int)player_construct.player_loc.Item2].character = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_construct.player_loc.Item1, spawn_location.y + player_construct.player_loc.Item2), new Quaternion());
         player = world_array[(int)player_construct.player_loc.Item1, (int)player_construct.player_loc.Item2].character;
         player.name = playerPrefab.name + "| Player";
         player.AddComponent<PlayerMovement>();
-        Debug.Log("Loc_x: " + player_construct.player_loc.Item1 + " Loc_y" + player_construct.player_loc.Item2);
-        Debug.Log("C_Hp: " + player_construct.cur_health + " M_Hp: " + player_construct.max_health + " C_energy: " + player_construct.cur_energy + " M_energy: " + player_construct.max_energy);
-        player.GetComponent<PlayerMovement>().SetPlayerLocation(player_construct.player_loc);
-        player.GetComponent<PlayerMovement>().SetCurrentHealth(player_construct.cur_health);
-        Debug.Log("C_Hp: " + player.GetComponent<PlayerMovement>().GetCurrentHealth());
-        player.GetComponent<PlayerMovement>().SetMaxHealth(player_construct.max_health);
-        player.GetComponent<PlayerMovement>().SetCurrentEnergy(player_construct.cur_energy);
-        player.GetComponent<PlayerMovement>().SetMaxEnergy(player_construct.max_energy);
-        player.GetComponent<PlayerMovement>().LearnMove(0, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Blaze"));
-        player.GetComponent<PlayerMovement>().LearnMove(1, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Pound"));
-        player.GetComponent<PlayerMovement>().LearnMove(2, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Bless"));
-        player.GetComponent<PlayerMovement>().LearnMove(3, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Fire Dance"));
-        player.GetComponent<PlayerMovement>().SetMovesetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
-        player.GetComponent<PlayerMovement>().SetEnemyTargetUI(target_enemy_panel, target_e1, target_e2, target_e3, target_e4, target_e5, target_e6, target_e7, target_e8);
+        PlayerMovement pl_movement = player.GetComponent<PlayerMovement>();
+        pl_movement.SetPlayerLocation(player_construct.player_loc);
+        pl_movement.SetCurrentHealth(player_construct.cur_health);
+        pl_movement.SetMaxHealth(player_construct.max_health);
+        pl_movement.SetCurrentEnergy(player_construct.cur_energy);
+        pl_movement.SetMaxEnergy(player_construct.max_energy);
+        pl_movement.LearnMove(0, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(player_construct.move1));
+        pl_movement.LearnMove(1, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(player_construct.move2));
+        pl_movement.LearnMove(2, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(player_construct.move3));
+        pl_movement.LearnMove(3, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(player_construct.move4));
+        pl_movement.SetMovesetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
+        pl_movement.SetEnemyTargetUI(target_enemy_panel, target_e1, target_e2, target_e3, target_e4, target_e5, target_e6, target_e7, target_e8);
 
     }
     private void SpawnEnemy()
@@ -262,7 +265,6 @@ public class WorldManager : MonoBehaviour
     }
     private void TurnSystem()
     {
-        Debug.Log("In Wm: player c_hp: " + player.GetComponent<PlayerMovement>().GetCurrentHealth());
         //Debug.Log("In Turn System");
         if (player_turn)
         {
@@ -296,12 +298,11 @@ public class WorldManager : MonoBehaviour
                     if (player_state.GetStateName().Equals("Attack")) Debug.Log("State is Attack");
                     if(PlayerAction(player_state))
                     {
-                        // TODO: Attack the enemy intended
+                        player_turn = false;
+                        enemy_turn = true;
+                        decide_to_attack = false;  
                     }
 
-                    player_turn = false;
-                    enemy_turn = true;
-                    decide_to_attack = false;
                 }
             }
 
@@ -638,9 +639,9 @@ public class WorldManager : MonoBehaviour
         enemy_construct.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp));
     }
  
-    public void LoadPlayer(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, float _cur_energy, float _max_energy)
+    public void LoadPlayer(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, float _cur_energy, float _max_energy,string m1, string m2, string m3, string m4)
     {
-        player_construct = new PlayerConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, _cur_energy, _max_energy);
+        player_construct = new PlayerConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, _cur_energy, _max_energy, m1, m2, m3, m4);
     }
 
     public void PrepareWorld()
@@ -684,8 +685,10 @@ public class WorldManager : MonoBehaviour
                 }
             }
         }
+        
         enemy_list.Clear();
         enemy_construct.Clear();
+        asset_construct.Clear();
         PrepareWorld();
     }
 }

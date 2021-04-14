@@ -26,13 +26,7 @@ public class PlayerMovement : MonoBehaviour
     //Stats
     private float max_health;
     [SerializeField]
-    private float current_health 
-    {
-        get;
-        set;
-    }
-
-
+    private float current_health;
     private float max_energy;
     [SerializeField]
     private float current_energy;
@@ -261,7 +255,28 @@ public class PlayerMovement : MonoBehaviour
         Move2.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(1); });
         Move3.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(2); });
         Move4.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(3); });
+    }
+    public void UpdateMoveUI()
+    {
+        if(attacks[0].GetMoveName() == "Empty")
+        {
+            Move1.GetComponent<Button>().interactable = false;
+        }
 
+        if(attacks[1].GetMoveName() == "Empty")
+        {
+            Move2.GetComponent<Button>().interactable = false;
+        }
+
+        if(attacks[2].GetMoveName() == "Empty")
+        {
+            Move3.GetComponent<Button>().interactable = false;
+        }
+
+        if(attacks[3].GetMoveName() == "Empty")
+        {
+            Move4.GetComponent<Button>().interactable = false;
+        }
     }
     public void SetEnemyTargetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4, GameObject _mb5, GameObject _mb6, GameObject _mb7, GameObject _mb8)
     {

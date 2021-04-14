@@ -1,0 +1,34 @@
+Dungeon Name: Trial
+Next Dungeon Name: Trial2
+Dungeon Size: 7,7
+w0 w0 w0 w0 w0 w0 w0
+w0 -- -- -- -- w0 w0
+w0 -- -- w0 -- w0 w0
+w0 -- -- -- -- w0 w0
+w0 -- -- -- -- -- w0
+w0 -- w0 -- -- w0 w0
+w0 w0 w0 w0 w0 w0 w0
+end-dungeon
+Enemies on Level
+-- -- -- -- -- -- -- 
+-- e1 -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- e2 -- -- -- -- 
+-- -- -- -- -- -- -- 
+end-enemy-loc
+EnemiesStatatistics
+e1,Elemont2,15,15
+e2,Elemont,15,15
+end-enemy
+Items on level
+-- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- --
+-- -- -- i1 -- -- -- --
+-- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- --
+-- -- -- i1 -- -- -- --
+-- -- -- -- -- -- -- --
+end-item

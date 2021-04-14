@@ -23,7 +23,7 @@ public class SaveManager : MonoBehaviour
     // Save the state of the player
     public void Save(string filename)
     {
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\Scripts\SaveSystem\" + filename + ".txt";    
+        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\SaveData\" + filename + ".txt";    
         using FileStream fs = File.Create(path);
         using var sr = new StreamWriter(fs);
 
