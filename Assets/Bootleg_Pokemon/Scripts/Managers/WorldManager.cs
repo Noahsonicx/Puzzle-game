@@ -1,3 +1,5 @@
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -129,7 +131,7 @@ public class WorldManager : MonoBehaviour
             //Debug.Log("Finished Loading Player");
             // Step 3:
             // Add Enemies into the world
-            enemy_locations.Add((2.0f, 2.0f));
+            //enemy_locations.Add((2.0f, 2.0f));
             enemy_locations.Add((1.0f, 4.0f));
 
             SpawnEnemy();
@@ -156,7 +158,7 @@ public class WorldManager : MonoBehaviour
             {
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + loc.Item1, spawn_location.y + loc.Item2);
                 world_array[(int)loc.Item1, (int)loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
-                Debug.Log("Spawning wall at location: " + loc.Item1 + "/" + loc.Item2);
+                //Debug.Log("Spawning wall at location: " + loc.Item1 + "/" + loc.Item2);
                 world_array[(int)loc.Item1, (int)loc.Item2].environment.gameObject.tag = "Wall";
             }
         }
@@ -179,6 +181,7 @@ public class WorldManager : MonoBehaviour
         player.GetComponent<PlayerMovement>().LearnMove(3, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset("Fire Dance"));
         player.GetComponent<PlayerMovement>().SetMovesetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
         player.GetComponent<PlayerMovement>().SetEnemyTargetUI(target_enemy_panel, target_e1, target_e2, target_e3, target_e4, target_e5, target_e6, target_e7, target_e8);
+        player.gameObject.tag = "Player"; 
 
     }
     private void SpawnEnemy()
@@ -211,10 +214,10 @@ public class WorldManager : MonoBehaviour
     private void TurnSystem()
     {
 
-        //Debug.Log("In Turn System");
+        Debug.Log("In Turn System");
         if (player_turn)
         {
-            //Debug.Log("Waiting for player input");
+            Debug.Log("Waiting for player input");
             // Wait for player input
             if (Input.GetKeyDown("w") || Input.GetKeyDown("a") || Input.GetKeyDown("s") || Input.GetKeyDown("d"))
             {
@@ -567,56 +570,124 @@ public class WorldManager : MonoBehaviour
     // This will populate the internal map for the inputed enemy
     private void THIS_Enemy_PopulateMap(GameObject _Enemy)
     {
-        // ----- KIERAN ----- //
-
-        // Checks the enemy - Sight and Coordinates for each enemy
+        Debug.Log("I'm in this enemy populate map");
         float enemySight;
         (float, float) enemyCoordinates;
-        (float, float) enemyCoordinates_bottomLeft;
 
-        WorldElements[,] enemy_world_array;
-
-        enemySight = _Enemy.GetComponent<EnemyMovement>().CurrentVision;
+        enemySight = _Enemy.GetComponent<EnemyMovement>().CurrentVision; //Vision to see currentvision X currentvision sized grid
         enemyCoordinates = _Enemy.GetComponent<EnemyMovement>().Location;
 
-        // Getting the bottom left cordinate
-        enemyCoordinates_bottomLeft.Item1 = enemyCoordinates.Item1 - ((enemySight / 2f) - 0.5f);     // This will be x  (x,y)
-        enemyCoordinates_bottomLeft.Item2 = enemyCoordinates.Item2 - ((enemySight / 2f) - 0.5f);     // This will be y  (x,y)
-        print(enemyCoordinates_bottomLeft + "enemy sight = " + enemySight);
-        print("enemyCoordinates_bottomLeft.Item1 = " + enemyCoordinates.Item1 + " - " + "((" + enemySight + "/" + "2f) - 0.5f)");
-        print("enemyCoordinates_bottomLeft.Item2 = " + enemyCoordinates.Item2 + " - " + "((" + enemySight + "/" + "2f) - 0.5f)");
-        print("enemyCoordinates_bottomLeft.Item1 = " + enemyCoordinates_bottomLeft.Item1 + " || " + "enemyCoordinates_bottomLeft.Item2 = " + enemyCoordinates_bottomLeft.Item2);
+        float counter = (float)Math.Floor(enemySight / 2.0f);
 
-        enemy_world_array = new WorldElements[(int)enemySight, (int)enemySight];
+        WorldElements[,] enemyVisionArray = new WorldElements[(int)enemySight, (int)enemySight];
 
-        // Goes through and makes the enemy world array and if out of range will put a wall there
-        for (int x = 0; x < enemySight; x++)            // This will be x  (x,y)
+        int x_worldArray = (int)enemyCoordinates.Item1 - (int)counter;
+        int y_worldArray = (int)enemyCoordinates.Item2 - (int)counter;
+
+        int x_maxWorldArray = (int)enemyCoordinates.Item1 + (int)counter;
+        int y_maxWorldArray = (int)enemyCoordinates.Item2 + (int)counter;
+
+        int x_enemyArray = 0;
+        int y_enemyArray = 0;
+
+        while (x_worldArray < x_maxWorldArray && x_enemyArray < enemySight)
         {
-            for (int y = 0; y < enemySight; y++)        // This will be y  (x,y)
+        
+            while(y_worldArray < y_maxWorldArray && y_enemyArray < enemySight)
             {
-                // If it is in range.
-                //////////////if ((x < 0 || x >= x_size || y < 0 || y >= y_size))
-                //////////////{
-                //////////////    enemy_world_array[x, y] = world_array[(int)(enemyCoordinates_bottomLeft.Item1 + x), (int)(enemyCoordinates_bottomLeft.Item2 + y)];
-                //////////////    print("populate");
-                //////////////}
-                //////////////else
-                //////////////{
-                //////////////    print("miss");
-                //////////////}
-                //if (enemyCoordinates_bottomLeft.Item1 + x < 0 || enemyCoordinates_bottomLeft.Item1 + x >= x_size || enemyCoordinates_bottomLeft.Item2 + y < 0 || enemyCoordinates_bottomLeft.Item2 + y >= y_size)
-                //{
-                //    enemy_world_array[x, y] = world_array[(int)(enemyCoordinates_bottomLeft.Item1 + x), (int)(enemyCoordinates_bottomLeft.Item2 + y)];
-                //    print("populate (" + (enemyCoordinates_bottomLeft.Item1 + x) + "," + (enemyCoordinates_bottomLeft.Item2 + y) + ")");
-                //}
-                //else
-                //{
-                //    print("miss ("+ (enemyCoordinates_bottomLeft.Item1 + x) + "," + (enemyCoordinates_bottomLeft.Item2 + y) + ")");
-                //    print(enemyCoordinates_bottomLeft);
-                //}
+                Debug.Log("x:" + x_worldArray + " y:" + y_worldArray);
+
+                if ((x_worldArray >= 0 && x_worldArray < x_size) && (y_worldArray >= 0 && y_worldArray < y_size))
+                {
+                    Debug.Log("Adding element to enemy array");
+                    enemyVisionArray[x_enemyArray, y_enemyArray] = world_array[x_worldArray, y_worldArray];
+                }
+
+                y_worldArray++;
+                y_enemyArray++;
             }
-            _Enemy.GetComponent<EnemyMovement>().Fill_Enemy_array(enemy_world_array);
+
+            y_worldArray = (int)enemyCoordinates.Item2 - (int)counter;
+            y_enemyArray = 0;
+
+            x_worldArray++;
+            x_enemyArray++;
         }
+
+        //PrintMatrix(enemyVisionArray);
+
+        _Enemy.GetComponent<EnemyMovement>().Fill_Enemy_array(enemyVisionArray);
+
+
+        // ----- KIERAN ----- //
+        /*
+                // Checks the enemy - Sight and Coordinates for each enemy
+                float enemySight;
+                (float, float) enemyCoordinates;
+                (float, float) enemyCoordinates_bottomLeft;
+
+                WorldElements[,] enemy_world_array;
+
+                enemySight = _Enemy.GetComponent<EnemyMovement>().CurrentVision;
+                enemyCoordinates = _Enemy.GetComponent<EnemyMovement>().Location;
+
+                // Getting the bottom left cordinate
+                enemyCoordinates_bottomLeft.Item1 = enemyCoordinates.Item1 - ((enemySight / 2f) - 0.5f);     // This will be x  (x,y)
+                enemyCoordinates_bottomLeft.Item2 = enemyCoordinates.Item2 - ((enemySight / 2f) - 0.5f);     // This will be y  (x,y)
+                print(enemyCoordinates_bottomLeft + "enemy sight = " + enemySight);
+                print("enemyCoordinates_bottomLeft.Item1 = " + enemyCoordinates.Item1 + " - " + "((" + enemySight + "/" + "2f) - 0.5f)");
+                print("enemyCoordinates_bottomLeft.Item2 = " + enemyCoordinates.Item2 + " - " + "((" + enemySight + "/" + "2f) - 0.5f)");
+                print("enemyCoordinates_bottomLeft.Item1 = " + enemyCoordinates_bottomLeft.Item1 + " || " + "enemyCoordinates_bottomLeft.Item2 = " + enemyCoordinates_bottomLeft.Item2);
+
+                enemy_world_array = new WorldElements[(int)enemySight, (int)enemySight];
+
+                // Goes through and makes the enemy world array and if out of range will put a wall there
+                for (int x = 0; x < enemySight; x++)            // This will be x  (x,y)
+                {
+                    for (int y = 0; y < enemySight; y++)        // This will be y  (x,y)
+                    {
+                        // If it is in range.
+                        //////////////if ((x < 0 || x >= x_size || y < 0 || y >= y_size))
+                        //////////////{
+                        //////////////    enemy_world_array[x, y] = world_array[(int)(enemyCoordinates_bottomLeft.Item1 + x), (int)(enemyCoordinates_bottomLeft.Item2 + y)];
+                        //////////////    print("populate");
+                        //////////////}
+                        //////////////else
+                        //////////////{
+                        //////////////    print("miss");
+                        //////////////}
+                        //if (enemyCoordinates_bottomLeft.Item1 + x < 0 || enemyCoordinates_bottomLeft.Item1 + x >= x_size || enemyCoordinates_bottomLeft.Item2 + y < 0 || enemyCoordinates_bottomLeft.Item2 + y >= y_size)
+                        //{
+                        //    enemy_world_array[x, y] = world_array[(int)(enemyCoordinates_bottomLeft.Item1 + x), (int)(enemyCoordinates_bottomLeft.Item2 + y)];
+                        //    print("populate (" + (enemyCoordinates_bottomLeft.Item1 + x) + "," + (enemyCoordinates_bottomLeft.Item2 + y) + ")");
+                        //}
+                        //else
+                        //{
+                        //    print("miss ("+ (enemyCoordinates_bottomLeft.Item1 + x) + "," + (enemyCoordinates_bottomLeft.Item2 + y) + ")");
+                        //    print(enemyCoordinates_bottomLeft);
+                        //}
+                    }
+                }
+                    _Enemy.GetComponent<EnemyMovement>().Fill_Enemy_array(enemy_world_array);
+                */
+    }
+
+    private void PrintMatrix(WorldElements[,] array)
+    {
+        for(int x = 0; x < array.GetLength(0); x++)
+        {
+            for (int y = 0; y < array.GetLength(1); y++)
+            {
+                if(array[x,y] != null)
+                {
+                    Debug.Log("Wall is: " + array[x, y].environment.gameObject + "\n" + "Wall is: " + array[x, y].character.gameObject + "\n" + "Wall is: " + array[x, y].environment.gameObject);
+                }
+                else
+                {
+                    Debug.Log("Dumbass its null");
+                }
+            }
+        } 
     }
 
     private void THIS_Enemy_MakeAction(GameObject _Enemy)

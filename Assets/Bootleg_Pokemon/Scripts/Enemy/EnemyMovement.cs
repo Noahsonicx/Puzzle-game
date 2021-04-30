@@ -101,6 +101,7 @@ public class EnemyMovement : MonoBehaviour
         string Movedirection = CheckPlayerInRange(enemy_position);
         if (Movedirection != "Player Not In Range")
         {
+            print(Movedirection);
             return Movedirection;
         }
 
@@ -116,27 +117,40 @@ public class EnemyMovement : MonoBehaviour
     private bool CheckAttack((float, float) _enemy_position)
     {
         // This will get the current position on the enemy grid.
-        (float, float) enemy_attackloacation;
-        enemy_attackloacation.Item1 = _enemy_position.Item1 - ((attackRange / 2f) - 0.5f);
-        enemy_attackloacation.Item2 = _enemy_position.Item2 - ((attackRange / 2f) - 0.5f);
+        (float, float) enemyAtkLocationMin;
+        enemyAtkLocationMin.Item1 = _enemy_position.Item1 - ((attackRange / 2f) - 0.5f);
+        enemyAtkLocationMin.Item2 = _enemy_position.Item2 - ((attackRange / 2f) - 0.5f);
+
+        (float, float) enemyAtkLocationMax;
+        enemyAtkLocationMax.Item1 = _enemy_position.Item1 + ((attackRange / 2f) - 0.5f);
+        enemyAtkLocationMax.Item2 = _enemy_position.Item2 + ((attackRange / 2f) - 0.5f);
+
+        //Debug.Log("before loop in check attack, x_min:" + enemyAtkLocationMin.Item1 + " y_min" + enemyAtkLocationMin.Item2);
+        //Debug.Log("before loop in check attack, x_max:" + enemyAtkLocationMax.Item1 + " y_max" + enemyAtkLocationMax.Item2);
+
         // Cycle through each location in probably a 3x3 grid.
-        for (int x = 0; x < attackRange; x++)           // This will be x  (x,y).
+        for (int x = (int)enemyAtkLocationMin.Item1; x <= (int)enemyAtkLocationMax.Item1; x++)           // This will be x  (x,y).
         {
-            for (int y = 0; y < attackRange; y++)       // This will be y  (x,y).
+            for (int y = (int)enemyAtkLocationMin.Item2; y <= (int)enemyAtkLocationMax.Item2; y++)       // This will be y  (x,y).
             {
-                if (Enemy_Array[(int)enemy_attackloacation.Item1, (int)enemy_attackloacation.Item2] != null)
+                //Debug.Log("In CheckAttack, X is:" + x + "Y is:" + y);
+                if (Enemy_Array[x,y] != null)
                 {
+
+                    //Debug.Log("In CheckAttack, enemyarray["+ x +"," + y +"] is not null");
                     // If there is a player in this location this enemy will return true and will know it can attack it.
-                    if (Enemy_Array[(int)enemy_attackloacation.Item1, (int)enemy_attackloacation.Item2].environment.gameObject.tag == "Player")
+
+                    if (Enemy_Array[x, y].character.gameObject.tag == "Player")
                     {
+                        //Debug.Log("Player is in range");
                         // Will attack player unless otherwise stated.
                         return true;
                     }
                 }
-                enemy_attackloacation.Item1++;
+                //enemyAtkLocationMin.Item1++;
             }
-            enemy_attackloacation.Item1 -= attackRange;
-            enemy_attackloacation.Item2++;
+            //enemyAtkLocationMin.Item1 -= attackRange;
+            //enemyAtkLocationMin.Item2++;
         }
         return false;
     }
@@ -160,13 +174,13 @@ public class EnemyMovement : MonoBehaviour
         int quadrantSize = (int)((currentVision / 2f) - 0.5f);
 
         // Cycle through each quadrand and coloumn to see if the player is there and thus move to them.
-
+        /*
         // Starting with bottom left.
         for (int x = 0; x < quadrantSize; x++)            // This will be x  (x,y).
         {
             for (int y = 0; y < quadrantSize; y++)   // This will be y  (x,y).
             {
-                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
+                if (Enemy_Array[x, y] != null)
                 {
                     // If there is a player in the bottom left location this enemy will move to it.
                     if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
@@ -504,7 +518,7 @@ public class EnemyMovement : MonoBehaviour
         // 1-1-1
         // 1-0-1
         // 1-1-1
-
+        */
         // If the player isn't in range it will say this.
         return "Player Not In Range";
     }
