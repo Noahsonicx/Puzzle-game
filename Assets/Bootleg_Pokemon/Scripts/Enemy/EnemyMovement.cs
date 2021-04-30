@@ -14,6 +14,7 @@ public class EnemyMovement : MonoBehaviour
     public (float, float) location;
     public TextMeshProUGUI health_text;
     private WorldElements[,] enemy_array;
+    private Moveset[] attacks = new Moveset[1];
 
     //private float Mana;
 
@@ -62,6 +63,7 @@ public class EnemyMovement : MonoBehaviour
     {
         location.Item1 = x;
         location.Item2 = y;
+        print("Spawn enemy at ( x = " + x + ", y = " + y + ").");
     }
 
     // Will be called in the beginning of the enemy turn and will make a map for the enemy within vision.
@@ -122,11 +124,14 @@ public class EnemyMovement : MonoBehaviour
         {
             for (int y = 0; y < attackRange; y++)       // This will be y  (x,y).
             {
-                // If there is a player in this location this enemy will return true and will know it can attack it.
-                if (Enemy_Array[(int)enemy_attackloacation.Item1, (int)enemy_attackloacation.Item2].environment.gameObject.tag == "Player")
+                if (Enemy_Array[(int)enemy_attackloacation.Item1, (int)enemy_attackloacation.Item2] != null)
                 {
-                    // Will attack player unless otherwise stated.
-                    return true;
+                    // If there is a player in this location this enemy will return true and will know it can attack it.
+                    if (Enemy_Array[(int)enemy_attackloacation.Item1, (int)enemy_attackloacation.Item2].environment.gameObject.tag == "Player")
+                    {
+                        // Will attack player unless otherwise stated.
+                        return true;
+                    }
                 }
                 enemy_attackloacation.Item1++;
             }
@@ -161,41 +166,44 @@ public class EnemyMovement : MonoBehaviour
         {
             for (int y = 0; y < quadrantSize; y++)   // This will be y  (x,y).
             {
-                // If there is a player in the bottom left location this enemy will move to it.
-                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
                 {
-                    // Check location at left and down to be either an enemy or wall.
-                    // If both free do one randomly if player below and left
-                    if (IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
-                            IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
+                    // If there is a player in the bottom left location this enemy will move to it.
+                    if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
                     {
-                        if (Random.value < .5)
+                        // Check location at left and down to be either an enemy or wall.
+                        // If both free do one randomly if player below and left
+                        if (IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
+                                IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
+                        {
+                            if (Random.value < .5)
+                            {
+                                return "Move Left";
+                            }
+                            else
+                            {
+                                return "Move Down";
+                            }
+                        }
+                        // If below is blocked off.
+                        else if (IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
+                                !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
                         {
                             return "Move Left";
                         }
-                        else
+                        // If left is blocked off.
+                        else if (!IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
+                                IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
                         {
                             return "Move Down";
                         }
-                    }
-                    // If below is blocked off.
-                    else if (IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
-                            !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
-                    {
-                        return "Move Left";
-                    }
-                    // If left is blocked off.
-                    else if (!IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
-                            IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
-                    {
-                        return "Move Down";
-                    }
-                    // If it gets to here, the enemy can not get to the player (as there is probs a wall or enemy in the way) and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
-                    else
-                    {
-                        return "Cant Move";
-                    }
+                        // If it gets to here, the enemy can not get to the player (as there is probs a wall or enemy in the way) and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
+                        else
+                        {
+                            return "Cant Move";
+                        }
 
+                    }
                 }
                 player_loacation.Item1++;
             }
@@ -213,18 +221,21 @@ public class EnemyMovement : MonoBehaviour
         // Now below the enemy.
         for (int y = 0; y < quadrantSize; y++)         // This will be y  (x,y).
         {
-            // If there is a player in the bottom location this enemy will move to it.
-            if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+            if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
             {
-                // Check location down to be either an enemy or wall and if free it will move down.
-                if (IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
+                // If there is a player in the bottom location this enemy will move to it.
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
                 {
-                    return "Move Down";
-                }
-                // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
-                else
-                {
-                    return "Cant Move";
+                    // Check location down to be either an enemy or wall and if free it will move down.
+                    if (IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
+                    {
+                        return "Move Down";
+                    }
+                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
+                    else
+                    {
+                        return "Cant Move";
+                    }
                 }
             }
             player_loacation.Item2++;
@@ -242,40 +253,43 @@ public class EnemyMovement : MonoBehaviour
         {
             for (int y = 0; y < quadrantSize; y++)          // This will be y  (x,y).
             {
-                // If there is a player in the bottom right location this enemy will move to it.
-                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
                 {
-                    // Check location at right and down to be either an enemy or wall.
-                    // If both free do one randomly if player below and right
-                    if (IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
-                        IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
+                    // If there is a player in the bottom right location this enemy will move to it.
+                    if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
                     {
-                        if (Random.value < .5)
+                        // Check location at right and down to be either an enemy or wall.
+                        // If both free do one randomly if player below and right
+                        if (IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
+                            IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
                         {
-                            return "Move Right";
+                            if (Random.value < .5)
+                            {
+                                return "Move Right";
+                            }
+                            else
+                            {
+                                return "Move Down";
+                            }
                         }
-                        else
+                        // If enemy below
+                        else if (!IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
+                                 IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
                         {
                             return "Move Down";
                         }
-                    }
-                    // If enemy below
-                    else if (!IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
-                             IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
-                    {
-                        return "Move Down";
-                    }
-                    else if (IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
-                             !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
-                    {
-                        return "Move Right";
-                    }
-                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
-                    else
-                    {
-                        return "Cant Move";
-                    }
+                        else if (IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
+                                 !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
+                        {
+                            return "Move Right";
+                        }
+                        // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
+                        else
+                        {
+                            return "Cant Move";
+                        }
 
+                    }
                 }
                 player_loacation.Item1++;
             }
@@ -293,18 +307,21 @@ public class EnemyMovement : MonoBehaviour
         // Now left of the enemy.
         for (int x = 0; x < quadrantSize; x++)         // This will be x  (x,y).
         {
-            // If there is a player in the left location this enemy will move to it.
-            if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+            if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
             {
-                // Check location left to be either an enemy or wall and if free it will move left.
-                if (IsLocationFreeToMove(_enemy_position.Item1 - 1, _enemy_position.Item2))
+                // If there is a player in the left location this enemy will move to it.
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
                 {
-                    return "Move Left";
-                }
-                // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
-                else
-                {
-                    return "Cant Move";
+                    // Check location left to be either an enemy or wall and if free it will move left.
+                    if (IsLocationFreeToMove(_enemy_position.Item1 - 1, _enemy_position.Item2))
+                    {
+                        return "Move Left";
+                    }
+                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
+                    else
+                    {
+                        return "Cant Move";
+                    }
                 }
             }
             player_loacation.Item1++;
@@ -320,18 +337,21 @@ public class EnemyMovement : MonoBehaviour
         // Now right of the enemy.
         for (int x = 0; x < quadrantSize; x++)         // This will be x  (x,y).
         {
-            // If there is a player in the right location this enemy move to it.
-            if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+            if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
             {
-                // Check location right to be either an enemy or wall and if free it will move right.
-                if (IsLocationFreeToMove(_enemy_position.Item1 + 1, _enemy_position.Item2))
+                // If there is a player in the right location this enemy move to it.
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
                 {
-                    return "Move Right";
-                }
-                // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
-                else
-                {
-                    return "Cant Move";
+                    // Check location right to be either an enemy or wall and if free it will move right.
+                    if (IsLocationFreeToMove(_enemy_position.Item1 + 1, _enemy_position.Item2))
+                    {
+                        return "Move Right";
+                    }
+                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
+                    else
+                    {
+                        return "Cant Move";
+                    }
                 }
             }
             player_loacation.Item1++;
@@ -349,41 +369,44 @@ public class EnemyMovement : MonoBehaviour
         {
             for (int y = 0; y < quadrantSize; y++)          // This will be y  (x,y).
             {
-                // If there is a player in the top left location this enemy will move to it.
-                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
                 {
-                    // Check location at left and up to be either an enemy or wall.
-                    // If both free do one randomly if player up and left
-                    if (IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
-                        IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
+                    // If there is a player in the top left location this enemy will move to it.
+                    if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
                     {
-                        if (Random.value < .5)
+                        // Check location at left and up to be either an enemy or wall.
+                        // If both free do one randomly if player up and left
+                        if (IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
+                            IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
                         {
-                            return "Move Left";
+                            if (Random.value < .5)
+                            {
+                                return "Move Left";
+                            }
+                            else
+                            {
+                                return "Move Up";
+                            }
                         }
-                        else
+                        // If the Player is in this Quadrant BUT the left is blocked.
+                        else if (!IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
+                                 IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
                         {
                             return "Move Up";
                         }
-                    }
-                    // If the Player is in this Quadrant BUT the left is blocked.
-                    else if (!IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
-                             IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
-                    {
-                        return "Move Up";
-                    }
-                    // If the Player is in this Quadrant BUT the up is blocked.
-                    else if (IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
-                             !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
-                    {
-                        return "Move Left";
-                    }
-                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
-                    else
-                    {
-                        return "Cant Move";
-                    }
+                        // If the Player is in this Quadrant BUT the up is blocked.
+                        else if (IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
+                                 !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
+                        {
+                            return "Move Left";
+                        }
+                        // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
+                        else
+                        {
+                            return "Cant Move";
+                        }
 
+                    }
                 }
                 player_loacation.Item1++;
             }
@@ -401,18 +424,21 @@ public class EnemyMovement : MonoBehaviour
         // Now above of the enemy.
         for (int y = 0; y < quadrantSize; y++)         // This will be y  (x,y).
         {
-            // If there is a player in the above location this enemy move to it.
-            if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+            if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
             {
-                // Check location above to be either an enemy or wall and if free it will move up.
-                if (IsLocationFreeToMove(_enemy_position.Item1 + 1, _enemy_position.Item2 + 1))
+                // If there is a player in the above location this enemy move to it.
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
                 {
-                    return "Move Up";
-                }
-                // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
-                else
-                {
-                    return "Cant Move";
+                    // Check location above to be either an enemy or wall and if free it will move up.
+                    if (IsLocationFreeToMove(_enemy_position.Item1 + 1, _enemy_position.Item2 + 1))
+                    {
+                        return "Move Up";
+                    }
+                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
+                    else
+                    {
+                        return "Cant Move";
+                    }
                 }
             }
             player_loacation.Item2++;
@@ -430,41 +456,44 @@ public class EnemyMovement : MonoBehaviour
         {
             for (int y = 0; y < quadrantSize; y++)          // This will be y  (x,y).
             {
-                // If there is a player in the top left location this enemy will move to it.
-                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
+                if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2] != null)
                 {
-                    // Check location at right and up to be either an enemy or wall.
-                    // If both free do one randomly if player up and right
-                    if (IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
-                        IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
+                    // If there is a player in the top left location this enemy will move to it.
+                    if (Enemy_Array[(int)player_loacation.Item1, (int)player_loacation.Item2].environment.gameObject.tag.Contains("Player"))
                     {
-                        if (Random.value < .5)
+                        // Check location at right and up to be either an enemy or wall.
+                        // If both free do one randomly if player up and right
+                        if (IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
+                            IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
                         {
-                            return "Move Right";
+                            if (Random.value < .5)
+                            {
+                                return "Move Right";
+                            }
+                            else
+                            {
+                                return "Move Up";
+                            }
                         }
-                        else
+                        // If the Player is in this Quadrant BUT the right is blocked.
+                        else if (!IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
+                                 IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
                         {
                             return "Move Up";
                         }
-                    }
-                    // If the Player is in this Quadrant BUT the right is blocked.
-                    else if (!IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
-                             IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
-                    {
-                        return "Move Up";
-                    }
-                    // If the Player is in this Quadrant BUT the up is blocked.
-                    else if (IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
-                             !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
-                    {
-                        return "Move Right";
-                    }
-                    // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
-                    else
-                    {
-                        return "Cant Move";
-                    }
+                        // If the Player is in this Quadrant BUT the up is blocked.
+                        else if (IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
+                                 !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
+                        {
+                            return "Move Right";
+                        }
+                        // If it gets to here the enemy can not get to the player as there is probs a wall or enemy in the way and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
+                        else
+                        {
+                            return "Cant Move";
+                        }
 
+                    }
                 }
                 player_loacation.Item1++;
             }
