@@ -18,6 +18,7 @@ public class PlayerMovement : MonoBehaviour
     private State player_state;
     private Moveset[] attacks = new Moveset[4];
     public GameObject[] enemy_list = new GameObject[8];
+    private (float, float) player_loc;
 
     private int attack_chosen = -1;
     private int enemy_chosen = -1;
@@ -26,7 +27,6 @@ public class PlayerMovement : MonoBehaviour
     private float max_health;
     [SerializeField]
     private float current_health;
-
     private float max_energy;
     [SerializeField]
     private float current_energy;
@@ -55,15 +55,61 @@ public class PlayerMovement : MonoBehaviour
 
     //private bool move_status = false; // Has player made a move
 
+    //Getter Functions
+    public float GetCurrentHealth()
+    {
+        return current_health;
+    }
+    public void SetCurrentHealth(float hp)
+    {
+        current_health = hp;
+    }
+    public float GetMaxHealth()
+    {
+        return max_health;
+    }
+    public void SetMaxHealth(float hp)
+    {
+        max_health = hp;
+    }
+    public float GetCurrentEnergy()
+    {
+        return current_energy;
+    }
+    public void SetCurrentEnergy(float energy)
+    {
+        current_energy = energy;
+    }
+    public float GetMaxEnergy()
+    {
+        return max_energy;
+    }
+    public void SetMaxEnergy(float energy)
+    {
+        max_energy = energy;
+    }
+    public Moveset[] GetMoveSet()
+    {
+        return attacks;
+    }
+    public (float, float) GetPlayerLocation()
+    {
+        return player_loc;
+    }
+
+    public void SetPlayerLocation((float,float) new_loc)
+    {
+        player_loc = new_loc;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         //Get Base stats here from elemontals
         max_health = GetComponent<Elemontals>().GetHealth();
-        current_health = max_health;
-
+        //current_health = max_health; // This resets current energy no matter what the load file says
         max_energy = GetComponent<Elemontals>().GetEnergy();
-        current_energy = max_energy;
+        //current_energy = max_energy; // This resets current energy no matter what the load file sayss
 
         //Get Stat UI
         health_text = GetComponentInChildren<Elemontals>().health_text;
@@ -71,8 +117,6 @@ public class PlayerMovement : MonoBehaviour
         energy_text.enabled = false;
         energy_text.enabled = true;
 
-        //TODO: Temporary
-        TakeDamage(5);
     }
 
     // Update is called once per frame
@@ -211,7 +255,28 @@ public class PlayerMovement : MonoBehaviour
         Move2.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(1); });
         Move3.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(2); });
         Move4.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(3); });
+    }
+    public void UpdateMoveUI()
+    {
+        if(attacks[0].GetMoveName() == "Empty")
+        {
+            Move1.GetComponent<Button>().interactable = false;
+        }
 
+        if(attacks[1].GetMoveName() == "Empty")
+        {
+            Move2.GetComponent<Button>().interactable = false;
+        }
+
+        if(attacks[2].GetMoveName() == "Empty")
+        {
+            Move3.GetComponent<Button>().interactable = false;
+        }
+
+        if(attacks[3].GetMoveName() == "Empty")
+        {
+            Move4.GetComponent<Button>().interactable = false;
+        }
     }
     public void SetEnemyTargetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4, GameObject _mb5, GameObject _mb6, GameObject _mb7, GameObject _mb8)
     {
