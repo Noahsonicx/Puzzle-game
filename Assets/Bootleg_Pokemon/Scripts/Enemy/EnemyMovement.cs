@@ -7,16 +7,35 @@ public class EnemyMovement : MonoBehaviour
 {
     private float max_health;
     private float current_health;
-    private (float, float) location;
+    public (float, float) location;
     public TextMeshProUGUI health_text;
 
     //private float Mana;
- 
+
+    public void SetMaxHealth(float _max)
+    {
+        max_health = _max;
+    }
+    public float GetMaxHealth()
+    {
+        return max_health;
+    }
+    public void SetCurrentHealth(float _curr)
+    {
+        current_health = _curr;
+    }
+    public float GetCurrentHealth()
+    {
+        return current_health;
+    }
+    public (float,float) GetLocation()
+    {
+        return location;
+    }
     // Start is called before the first frame update
     void Start()
     {
         max_health = GetComponent<Elemontals>().GetHealth(); // Could be modified if it scales by level
-        current_health = max_health;
         health_text = GetComponent<Elemontals>().health_text;
     }
 
@@ -29,14 +48,15 @@ public class EnemyMovement : MonoBehaviour
     {
         GetComponent<Elemontals>().ChangeText(current_health + "/" + max_health);
     }
-    public void TakeDamage(float dmg)
+    public bool TakeDamage(float dmg)
     {
         Debug.Log("Damage Taken: " + dmg);
         Debug.Log("Starting Health: " + current_health);
         current_health -= dmg;
         Debug.Log("Final Health: " + current_health);
         SetText();
-        if (current_health <= 0) Destroy(this.gameObject);
+        if (current_health <= 0) return true;
+        return false;
     }
     public void SetLocation(float x, float y)
     {

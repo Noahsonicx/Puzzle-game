@@ -17,17 +17,23 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private State player_state;
     private Moveset[] attacks = new Moveset[4];
-    public GameObject[] enemy_list = new GameObject[4];
+    public GameObject[] enemy_list = new GameObject[8];
+    private (float, float) player_loc;
 
     private int attack_chosen = -1;
     private int enemy_chosen = -1;
 
     //Stats
     private float max_health;
+    [SerializeField]
     private float current_health;
+    private float max_energy;
+    [SerializeField]
+    private float current_energy;
 
     //Stat UI
     TextMeshProUGUI health_text;
+    TextMeshProUGUI energy_text;
 
     //UI element
     public GameObject MovePanel;
@@ -42,27 +48,82 @@ public class PlayerMovement : MonoBehaviour
     public GameObject target_e2;
     public GameObject target_e3;
     public GameObject target_e4;
+    public GameObject target_e5;
+    public GameObject target_e6;
+    public GameObject target_e7;
+    public GameObject target_e8;
 
     //private bool move_status = false; // Has player made a move
+
+    //Getter Functions
+    public float GetCurrentHealth()
+    {
+        return current_health;
+    }
+    public void SetCurrentHealth(float hp)
+    {
+        current_health = hp;
+    }
+    public float GetMaxHealth()
+    {
+        return max_health;
+    }
+    public void SetMaxHealth(float hp)
+    {
+        max_health = hp;
+    }
+    public float GetCurrentEnergy()
+    {
+        return current_energy;
+    }
+    public void SetCurrentEnergy(float energy)
+    {
+        current_energy = energy;
+    }
+    public float GetMaxEnergy()
+    {
+        return max_energy;
+    }
+    public void SetMaxEnergy(float energy)
+    {
+        max_energy = energy;
+    }
+    public Moveset[] GetMoveSet()
+    {
+        return attacks;
+    }
+    public (float, float) GetPlayerLocation()
+    {
+        return player_loc;
+    }
+
+    public void SetPlayerLocation((float,float) new_loc)
+    {
+        player_loc = new_loc;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         //Get Base stats here from elemontals
         max_health = GetComponent<Elemontals>().GetHealth();
-        current_health = max_health;
+        //current_health = max_health; // This resets current energy no matter what the load file says
+        max_energy = GetComponent<Elemontals>().GetEnergy();
+        //current_energy = max_energy; // This resets current energy no matter what the load file sayss
 
         //Get Stat UI
-        health_text = GetComponent<Elemontals>().health_text;
+        health_text = GetComponentInChildren<Elemontals>().health_text;
+        energy_text = GetComponent<Elemontals>().energy_text;
+        energy_text.enabled = false;
+        energy_text.enabled = true;
 
-        //TODO: Temporary
-        TakeDamage(5);
     }
 
     // Update is called once per frame
     void Update()
     {
         health_text.text = current_health + "/" + max_health;
+        energy_text.text = current_energy + "/" + max_energy;
     }
     public State Move()
     {
@@ -126,22 +187,31 @@ public class PlayerMovement : MonoBehaviour
         {
             move = attacks[attack_chosen];
 
-            if(move.GetTarget().Contains("Self"))
+            if (move.GetManaCost() > current_energy)
             {
-                //Debug.Log("Ability targets self");
-           
-                return player_state = new Attack(this.gameObject, move);
+                //TODO: Make UI warning pop up
+                Debug.Log("Not enough mana to use: " + move.GetMoveName());
             }
-            else if (move.GetTarget().Contains("Enemy"))
+            else
             {
-                
-                UpdateEnemyTargetUI();
-                //Debug.Log("Ability targets enemy");
-                Debug.Log("Enemy_chosen: " + enemy_chosen);
-                if(enemy_chosen != -1)
+                if (move.GetTarget().Contains("Self"))
                 {
-                    return player_state = new Attack(enemy_list[enemy_chosen], move);
+                    //Debug.Log("Ability targets self");
 
+                    return player_state = new Attack(this.gameObject, move);
+                }
+                else if (move.GetTarget().Contains("Enemy"))
+                {
+
+                    UpdateEnemyTargetUI();
+                    //Debug.Log("Ability targets enemy");
+                    Debug.Log("Enemy_chosen: " + enemy_chosen);
+                    if (enemy_chosen != -1)
+                    {
+                        current_energy -= move.GetManaCost();
+                        return player_state = new Attack(enemy_list[enemy_chosen], move);
+
+                    }
                 }
             }
         }
@@ -185,26 +255,55 @@ public class PlayerMovement : MonoBehaviour
         Move2.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(1); });
         Move3.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(2); });
         Move4.GetComponent<Button>().onClick.AddListener(delegate { OnAttackButtonClick(3); });
-
     }
-    public void SetEnemyTargetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4)
+    public void UpdateMoveUI()
+    {
+        if(attacks[0].GetMoveName() == "Empty")
+        {
+            Move1.GetComponent<Button>().interactable = false;
+        }
+
+        if(attacks[1].GetMoveName() == "Empty")
+        {
+            Move2.GetComponent<Button>().interactable = false;
+        }
+
+        if(attacks[2].GetMoveName() == "Empty")
+        {
+            Move3.GetComponent<Button>().interactable = false;
+        }
+
+        if(attacks[3].GetMoveName() == "Empty")
+        {
+            Move4.GetComponent<Button>().interactable = false;
+        }
+    }
+    public void SetEnemyTargetUI(GameObject _panel, GameObject _mb1, GameObject _mb2, GameObject _mb3, GameObject _mb4, GameObject _mb5, GameObject _mb6, GameObject _mb7, GameObject _mb8)
     {
         target_enemy_panel = _panel;
         target_e1 = _mb1;
         target_e2 = _mb2;
         target_e3 = _mb3;
         target_e4 = _mb4;
+        target_e5 = _mb5;
+        target_e6 = _mb6;
+        target_e7 = _mb7;
+        target_e8 = _mb8;
 
         target_e1.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(0); });
         target_e2.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(1); });
         target_e3.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(2); });
         target_e4.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(3); });
+        target_e5.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(4); });
+        target_e6.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(5); });
+        target_e7.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(6); });
+        target_e8.GetComponent<Button>().onClick.AddListener(delegate { OnEnemyButtonClick(7); });
 
     }
     public void UpdateEnemyTargetUI() 
     {
         target_enemy_panel.SetActive(true);
-        if (enemy_list[0].gameObject.name.Contains("EmptyEnemy")) // Check for Top enemy
+        if (enemy_list[0].gameObject.name.Contains("EmptyObject")) // Check for Top enemy
         {
             target_e1.SetActive(false);
         }
@@ -214,36 +313,78 @@ public class PlayerMovement : MonoBehaviour
             target_e1.SetActive(true);
         }
         
-        if(enemy_list[1].gameObject.name.Contains("EmptyEnemy")) // Check for Right enemy
+        if(enemy_list[1].gameObject.name.Contains("EmptyObject")) // Check for Right enemy
         {
             Debug.Log("Right Should be off");
             target_e2.SetActive(false);
         }
         else
         {
-            target_e2.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[1].GetComponent<Elemontals>().GetName() + "\n(Right)";
+            target_e2.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[1].GetComponent<Elemontals>().GetName() + "\n(Top-Right)";
             target_e2.SetActive(true);
         }
         
-        if(enemy_list[2].gameObject.name.Contains("EmptyEnemy"))
+        if(enemy_list[2].gameObject.name.Contains("EmptyObject"))
         {
             target_e3.SetActive(false);
         }
         else
         {
-            target_e3.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[2].GetComponent<Elemontals>().GetName() + "\n(Bottom)";
+            target_e3.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[2].GetComponent<Elemontals>().GetName() + "\n(Right)";
             target_e3.SetActive(true);
         }
         
-        if(enemy_list[3].gameObject.name.Contains("EmptyEnemy"))
+        if(enemy_list[3].gameObject.name.Contains("EmptyObject"))
         {
             target_e4.SetActive(false);
         }
         else
         {
-            target_e4.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[3].GetComponent<Elemontals>().GetName() + "\nLeft";
+            target_e4.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[3].GetComponent<Elemontals>().GetName() + "\n(Bottom-Right";
             target_e4.SetActive(true);
         }
+
+        if(enemy_list[4].gameObject.name.Contains("EmptyObject"))
+        {
+            target_e5.SetActive(false);
+        }
+        else
+        {
+            target_e5.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[4].GetComponent<Elemontals>().GetName() + "\n(Bottom)";
+            target_e5.SetActive(true);
+        }
+
+        if(enemy_list[5].gameObject.name.Contains("EmptyObject"))
+        {
+            target_e6.SetActive(false);
+        }
+        else
+        {
+            target_e6.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[5].GetComponent<Elemontals>().GetName() + "\n(Bottom-Left)";
+            target_e6.SetActive(true);
+        }
+
+        if(enemy_list[6].gameObject.name.Contains("EmptyObject"))
+        {
+            target_e7.SetActive(false);
+        }
+        else
+        {
+            target_e7.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[6].GetComponent<Elemontals>().GetName() + "\n(Left)";
+            target_e7.SetActive(true);
+        }
+
+        if(enemy_list[7].gameObject.name.Contains("EmptyObject"))
+        {
+            target_e8.SetActive(false);
+        }
+        else
+        {
+            target_e8.GetComponentInChildren<TextMeshProUGUI>().text = enemy_list[7].GetComponent<Elemontals>().GetName() + "\n(Top-Left)";
+            target_e8.SetActive(true);
+        }
+
+
     }
 
     public void ResetMoveAndEnemy()
