@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
@@ -227,7 +228,7 @@ public class WorldManager : MonoBehaviour
         pl_movement.LearnMove(3, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(player_construct.move4));
         pl_movement.SetMovesetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
         pl_movement.SetEnemyTargetUI(target_enemy_panel, target_e1, target_e2, target_e3, target_e4, target_e5, target_e6, target_e7, target_e8);
-
+        player.gameObject.tag = "Player";
     }
     private void SpawnEnemy()
     {
@@ -310,8 +311,7 @@ public class WorldManager : MonoBehaviour
 
         if(enemy_turn)
         {
-            // Wait for all enemies to have moved
-
+            TakeEnemyTurn();
             enemy_turn = false;
             player_turn = true;
         }
@@ -417,6 +417,7 @@ public class WorldManager : MonoBehaviour
     private bool PlayerAction(State st)
     {
         bool move_success = false;
+        (float, float) old_player_loc = player.GetComponent<PlayerMovement>().GetPlayerLocation();
         (float, float) new_player_loc = player.GetComponent<PlayerMovement>().GetPlayerLocation();
         
         switch (st.GetStateName())
@@ -437,7 +438,9 @@ public class WorldManager : MonoBehaviour
                             //Debug.Log("Moving Player Up");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
-                            world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
+                            //world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = null;
+                            world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
+                            old_player_loc = new_player_loc;
                             player_loc = new_player_loc;
                             player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
@@ -466,7 +469,8 @@ public class WorldManager : MonoBehaviour
                             Debug.Log("Moving Player Down");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
-                            world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
+                            world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
+                            old_player_loc = new_player_loc;
                             player_loc = new_player_loc;
                             player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
@@ -491,7 +495,9 @@ public class WorldManager : MonoBehaviour
                             Debug.Log("Moving Player Left");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
-                            world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
+                            world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
+                            Debug.Log("Spot left by player is:" + world_array[(int)player_loc.Item1, (int)player_loc.Item2].character.gameObject.name);
+                            old_player_loc = new_player_loc;
                             player_loc = new_player_loc;
                             player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
@@ -516,7 +522,8 @@ public class WorldManager : MonoBehaviour
                             Debug.Log("Moving Player Right");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
-                            world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = EmptyObject;
+                            world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
+                            old_player_loc = new_player_loc;
                             player_loc = new_player_loc;
                             player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
@@ -690,5 +697,215 @@ public class WorldManager : MonoBehaviour
         enemy_construct.Clear();
         asset_construct.Clear();
         PrepareWorld();
+    }
+
+    private void TakeEnemyTurn()
+    {
+        // Wait for all enemies to have moved
+
+        // ----- KIERAN ----- //
+        foreach (GameObject TempEnemy in enemy_list)
+        {
+            THIS_Enemy_TakeTurn(TempEnemy);
+        }
+    }
+
+    // This will run the turn for the enemy placed into the method
+    private void THIS_Enemy_TakeTurn(GameObject _Enemy)
+    {
+        // ----- KIERAN ----- //
+        THIS_Enemy_PopulateMap(_Enemy);
+        THIS_Enemy_MakeAction(_Enemy);
+
+
+    }
+
+    // This will populate the internal map for the inputed enemy
+    private void THIS_Enemy_PopulateMap(GameObject _Enemy)
+    {
+        Debug.Log("I'm in this enemy populate map");
+        float enemySight;
+        (float, float) enemyCoordinates;
+
+        enemySight = _Enemy.GetComponent<EnemyMovement>().CurrentVision; //Vision to see currentvision X currentvision sized grid
+        enemyCoordinates = _Enemy.GetComponent<EnemyMovement>().Location;
+
+        float halfEnemySight = (float)Math.Floor(enemySight / 2.0f);
+
+        WorldElements[,] enemyVisionArray = new WorldElements[(int)enemySight, (int)enemySight];
+
+        int x_worldArray = (int)enemyCoordinates.Item1 - (int)halfEnemySight;
+        int y_worldArray = (int)enemyCoordinates.Item2 - (int)halfEnemySight;
+
+        int x_maxWorldArray = (int)enemyCoordinates.Item1 + (int)halfEnemySight;
+        int y_maxWorldArray = (int)enemyCoordinates.Item2 + (int)halfEnemySight;
+
+        int x_enemyArray = 0;
+        int y_enemyArray = 0;
+
+        Debug.Log("Enemy Pos:" + enemyCoordinates.Item1 + "/" + enemyCoordinates.Item2);
+        Debug.Log("halfEnemySight:" + halfEnemySight);
+        Debug.Log("x_minWA:" + x_worldArray);
+        Debug.Log("y_minWA:" + y_worldArray);
+        Debug.Log("x_maxWA:" + x_maxWorldArray);
+        Debug.Log("y_maxWA:" + y_maxWorldArray);
+        while (x_worldArray <= x_maxWorldArray && x_enemyArray < enemySight)
+        {
+
+            while (y_worldArray <= y_maxWorldArray && y_enemyArray < enemySight)
+            {
+
+
+                if ((x_worldArray >= 0 && x_worldArray < x_size) && (y_worldArray >= 0 && y_worldArray < y_size))
+                {
+                    Debug.Log("Adding element to enemy array");
+                    enemyVisionArray[x_enemyArray, y_enemyArray] = world_array[x_worldArray, y_worldArray];
+                    //Debug.Log("Character of element copied:" + world_array[x_worldArray, y_worldArray].character.gameObject.name);
+                    if (enemyVisionArray[x_enemyArray, y_enemyArray] == null)
+                    {
+                        Debug.Log("enemyVisionArray Element is null when populating array");
+                    }
+                    if (world_array[x_worldArray, y_worldArray] == null)
+                    {
+                        Debug.Log("WorldArray Element is null when populating array");
+                    }
+                }
+                else
+                {
+
+                    Debug.Log("Inserting element outside of world array as empty WorldElements");
+                    Debug.Log("x_WA_null:" + x_worldArray + " y_WA:" + y_worldArray);
+                    Debug.Log("x_EA:null" + x_enemyArray + " y_EA:" + y_enemyArray);
+                    enemyVisionArray[x_enemyArray, y_enemyArray] = new WorldElements(EmptyObject);
+                }
+
+                y_worldArray++;
+                y_enemyArray++;
+            }
+
+            y_worldArray = (int)enemyCoordinates.Item2 - (int)halfEnemySight;
+            y_enemyArray = 0;
+
+            x_worldArray++;
+            x_enemyArray++;
+        }
+        PrintMatrix(world_array);
+        _Enemy.GetComponent<EnemyMovement>().Fill_Enemy_array(enemyVisionArray);
+    }
+
+    private void PrintMatrix(WorldElements[,] array)
+    {
+        int counter = 0;
+        for (int x = 0; x < array.GetLength(0); x++)
+        {
+            for (int y = 0; y < array.GetLength(1); y++)
+            {
+                if (array[x, y] != null)
+                {
+                    counter++;
+                    if (array[x, y].character == EmptyObject && array[x, y].environment == EmptyObject) Debug.Log("Empty Spot");
+                    else
+                    {
+                        Debug.Log("Character is: " + array[x, y].character.gameObject + "\n" + "Wall is: " + array[x, y].environment.gameObject);
+                    }
+                }
+                else
+                {
+                    Debug.Log("Dumbass its null");
+                }
+            }
+        }
+
+        Debug.Log("Counter:" + counter);
+    }
+
+    private void THIS_Enemy_MakeAction(GameObject _Enemy)
+    {
+    
+        // This will produce one of the following strings:
+        //      "Attack"                                    - If the player IS in attack range of THIS enemy.
+        //      "Move " + "Left" / "Down" / "Right" / "Up"  - If the player IS NOT in attack range, AND IS in vision range of THIS enemy, AND the enemy CAN move towards them).
+        //      "Cant Move"                                 - If the player IS NOT in attack range, AND IS in vision range of THIS enemy, AND the enemy CAN NOT move towards them).
+        //      "Pass"                                      - If the player IS NOT in attack range, AND IS NOT in vision range of THIS enemy.
+        
+        State st = _Enemy.GetComponent<EnemyMovement>().Take_Turn();
+        (float, float) old_enemy_loc = _Enemy.GetComponent<EnemyMovement>().GetLocation();
+        (float, float) new_enemy_loc = _Enemy.GetComponent<EnemyMovement>().GetLocation();
+
+
+        switch (st.GetStateName())
+        {
+            case "Attack":
+                //Debug.Log("Got you now bitch");
+
+
+
+                ////Debug.Log("Target is Player");
+                ////switch (atk_state.move.GetStatAffected())
+                ////{
+                ////    case "Health":
+                ////        Debug.Log("Enemy Health Affected");
+                ////        if (atk_state.target.gameObject.GetComponent<EnemyMovement>().TakeDamage(atk_state.move.GetValue()))
+                ////        {
+                ////            var tmp_x = atk_state.target.GetComponent<EnemyMovement>().location.Item1;
+                ////            var tmp_y = atk_state.target.GetComponent<EnemyMovement>().location.Item2;
+                ////            Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
+                ////            world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
+
+                ////        }
+                ////        break;
+                ////    case "Mana":
+                ////        Debug.Log("Enemy Mana Affected");
+                ////        // Add more stats later   
+                ////        break;
+
+                break;
+            case "Move Left":
+                // Find Enemy Location
+                new_enemy_loc.Item1 -= 1.0f;
+                // Move enemy to new location;
+                _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
+                world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
+                world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
+                // Set old location to empty object
+                _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
+                break;
+            case "Move Down":
+                // Find Enemy Location
+                new_enemy_loc.Item2 -= 1.0f;
+                // Move enemy to new location;
+                _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
+                world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
+                world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
+                // Set old location to empty object
+                _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
+                break;
+            case "Move Right":
+                // Find Enemy Location
+                new_enemy_loc.Item1 += 1.0f;
+                // Move enemy to new location;
+                _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
+                world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
+                world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
+                // Set old location to empty object
+                _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
+                break;
+            case "Move Up":
+                // Find Enemy Location
+                new_enemy_loc.Item2 += 1.0f;
+                // Move enemy to new location;
+                _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
+                world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
+                world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
+                // Set old location to empty object
+                _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
+                break;
+            case "Cant Move":
+                break;
+            case "Pass":
+                break;
+            default:
+                break;
+        }
     }
 }

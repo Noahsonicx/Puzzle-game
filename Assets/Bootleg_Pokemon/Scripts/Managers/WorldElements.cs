@@ -6,7 +6,19 @@ public class WorldElements
 {
     public GameObject environment;
     public GameObject item;
-    public GameObject character;
+
+    private GameObject _character;
+    public GameObject character
+    {
+        get
+        {
+            return _character;
+        }
+        set
+        {
+            _character = value;
+        }
+    }
 
     public WorldElements(GameObject empty)
     {
