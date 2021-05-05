@@ -8,8 +8,8 @@ public class EnemyMovement : MonoBehaviour
     public float CurrentVision => currentVision;
     public (float, float) Location => location;
 
-    public float max_health;
-    public float current_health;
+    private float max_health;
+    private float current_health;
     public (float, float) location;
     public TextMeshProUGUI health_text;
     private WorldElements[,] enemy_Array;
@@ -17,35 +17,16 @@ public class EnemyMovement : MonoBehaviour
 
     private GameObject EmptyObject;
 
+    //private float Mana;
+
+
     // I know this is bad but it works.
 
     // The state the enemies are in and how much vision they have.
     private float currentVision;
     private float attackRange;
 
-    public void SetCurrentHealth(float _cHealth)
-    {
-        current_health = _cHealth;
-    }
-    public float GetCurrentHealth()
-    {
-        return current_health;
-    }
-
-    public float GetMaxHealth()
-    {
-        return max_health;
-    }
-
-    public void SetMaxHealth(float _mHealth)
-    {
-        max_health = _mHealth;
-    }
-
-    public (float,float) GetLocation()
-    {
-        return location;
-    }
+ 
     // Start is called before the first frame update
     void Start()
     {
@@ -97,12 +78,12 @@ public class EnemyMovement : MonoBehaviour
         Debug.Log("y size of en_Ar:" + en_Ar.GetLength(1));
         Debug.Log("Current Vision:" + currentVision);
 
-        for (int x = 0; x < currentVision; x++)
+        for(int x = 0; x < currentVision ;x++)
         {
-            for (int y = 0; y < currentVision; y++)
+            for(int y = 0; y < currentVision; y++)
             {
                 enemy_Array[x, y] = en_Ar[x, y];
-                if (en_Ar[x, y] == null)
+                if (en_Ar[x,y] == null)
                 {
                     Debug.Log("Element is null when copying");
                 }
@@ -140,7 +121,7 @@ public class EnemyMovement : MonoBehaviour
         string Movedirection = CheckToMove(enemy_position);
         if (!Movedirection.Contains("Stay"))
         {
-            Debug.Log("MoveDirection:" + Movedirection);
+            print(Movedirection);
             return Movedirection;
         }
 
@@ -173,7 +154,7 @@ public class EnemyMovement : MonoBehaviour
             for (int y = (int)enemyAtkLocationMin.Item2; y <= (int)enemyAtkLocationMax.Item2; y++)       // This will be y  (x,y).
             {
                 //Debug.Log("In CheckAttack, X is:" + x + "Y is:" + y);
-                if (enemy_Array[x, y] != null)
+                if (enemy_Array[x,y] != null)
                 {
 
                     //Debug.Log("In CheckAttack, enemyarray["+ x +"," + y +"] is not null");
@@ -199,8 +180,8 @@ public class EnemyMovement : MonoBehaviour
     // This is called in Take_Turn.
     // This will check if the player is in the enemy array and if so will move in the direction of the player.
     // It is split into:
-    // 4 quatrants: (Bottom Left), (Bottom Right), (Top Left), (Top Right) 
-    // 4 direct quatrants: (Bottom), (Left), (Right), (Top) 
+        // 4 quatrants: (Bottom Left), (Bottom Right), (Top Left), (Top Right) 
+        // 4 direct quatrants: (Bottom), (Left), (Right), (Top) 
     // If in none will say "Player Not In Range".
     private string CheckToMove((float, float) _enemy_position)
     {
@@ -213,15 +194,15 @@ public class EnemyMovement : MonoBehaviour
         int quadrantSize = (int)((currentVision / 2f) - 0.5f);
 
 
-        for (int x = 0; x < currentVision; x++)
+        for(int x = 0; x < currentVision; x++)
         {
             for (int y = 0; y < currentVision; y++)
             {
                 //Debug.Log("Before Index Error, X & Y is:" + x + "/" + y);
                 //Debug.Log("Array Length is:" + enemy_Array.GetLength(0) + "/" + enemy_Array.GetLength(1));
-                if (enemy_Array[x, y] != null)
+                if (enemy_Array[x,y] != null)
                 {
-                    if (enemy_Array[x, y].character == null)
+                    if(enemy_Array[x,y].character == null)
                     {
                         Debug.Log("Character Field == null");
                     }
@@ -241,7 +222,7 @@ public class EnemyMovement : MonoBehaviour
         //X-X-0-0-0
         //X-X-0-0-0
         //(x is 0 & 1) and (y is 0 & 1)
-        if ((player_location.Item1 >= 0 && player_location.Item1 < quadrantSize) &&
+        if((player_location.Item1 >= 0 && player_location.Item1 < quadrantSize) && 
            (player_location.Item2 >= 0 && player_location.Item2 < quadrantSize))
         {
             // They're in bottom left quadrant
@@ -424,10 +405,10 @@ public class EnemyMovement : MonoBehaviour
         //X-X-0-0-0
         //0-0-0-0-0
         //0-0-0-0-0
-        if (player_location.Item1 < quadrantSize && player_location.Item1 >= 0 && player_location.Item2 == quadrantSize)
+        if(player_location.Item1 < quadrantSize && player_location.Item1 >= 0 && player_location.Item2 == quadrantSize)
         {
             //They're directly left of the enemy
-            if (!IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2))
+            if (!IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2)) 
             {
                 bool isUpOpen = false;
                 bool isDownOpen = false;
@@ -436,9 +417,9 @@ public class EnemyMovement : MonoBehaviour
                 {
                     // Move up since up is open
                     isUpOpen = true;
-
+                    
                 }
-                if (IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
+                if(IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f)) 
                 {
                     // Move down since down is open
                     isDownOpen = true;
@@ -461,14 +442,14 @@ public class EnemyMovement : MonoBehaviour
                     // Up and down also closed off
                     return "Move Right Or Can't Move";
                 }
-
+                
             }
             else
             {
                 return "Move Left";
             }
         }
-        if (player_location.Item1 > quadrantSize && player_location.Item1 < currentVision && player_location.Item2 == quadrantSize)
+        if(player_location.Item1 > quadrantSize && player_location.Item1 < currentVision && player_location.Item2 == quadrantSize)
         {
             //They're directly right of the enemy 
             if (!IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2))
@@ -509,7 +490,7 @@ public class EnemyMovement : MonoBehaviour
             }
             else return "Move Right";
         }
-        if (player_location.Item2 > quadrantSize && player_location.Item2 < currentVision && player_location.Item1 == quadrantSize)
+        if(player_location.Item2 > quadrantSize && player_location.Item2 < currentVision && player_location.Item1 == quadrantSize)
         {
             //They're directly up of the enemy
             if (!IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
@@ -549,7 +530,7 @@ public class EnemyMovement : MonoBehaviour
             }
             else return "Move Up";
         }
-        if (player_location.Item2 < quadrantSize && player_location.Item2 >= 0 && player_location.Item1 == quadrantSize)
+        if(player_location.Item2 < quadrantSize && player_location.Item2 >= 0 && player_location.Item1 == quadrantSize)
         {
             //They're directly down of the enemy
             if (!IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
@@ -627,7 +608,7 @@ public class EnemyMovement : MonoBehaviour
                     if (array[x, y].character == EmptyObject && array[x, y].environment == EmptyObject) Debug.Log("In EM, Empty Spot");
                     else
                     {
-                        Debug.Log("In EM, At X:" + x + ", Y:" + y + "Environment is: " + array[x, y].environment.gameObject + "\n" + "Character is: " + array[x, y].character.gameObject);
+                        Debug.Log("In EM, At X:" + x +", Y:" + y + "Environment is: " + array[x, y].environment.gameObject + "\n" + "Character is: " + array[x, y].character.gameObject);
                     }
                 }
                 else

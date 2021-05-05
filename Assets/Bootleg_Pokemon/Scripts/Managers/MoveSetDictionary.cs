@@ -12,14 +12,12 @@ public class MoveSetDictionary : MonoBehaviour
     {
         //Make some moves here. TODO: Will implement reading from text
 
-        Moveset move0 = new Moveset("Empty", "Empty", "Empty", "Empty", 0, 0);
         Moveset move1 = new Moveset("Blaze", "Fire", "Enemy", "Health", 10.0f, 5.0f);
         Moveset move2 = new Moveset("Pound", "Normal", "Enemy", "Health", 5.0f, 3.0f);
         Moveset move3 = new Moveset("Bless", "Normal", "Self", "Health", 20.0f, 10.0f);
         Moveset move4 = new Moveset("Fire Dance", "Fire", "Enemy", "Defence", 3.0f, 5.0f);
 
         // Add to List first
-        move_list.Add(move0);
         move_list.Add(move1);
         move_list.Add(move2);
         move_list.Add(move3);
