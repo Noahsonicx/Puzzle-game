@@ -101,9 +101,9 @@ Enemies on Level
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 end-enemy-loc
 EnemiesStatistics
-e1,Elemont2,15,15
-e2,Elemont,15,15
-e3,Elemont,15,15
+e1,Elemont2,15,15, Ice Wall, Ice Shot, Water Whip, Water Whip
+e2,Elemont,15,15, Earth Tomb, Plate Shot, Rock Barrage, Rock Barrage
+e3,Elemont,15,15, Air Sphere Shot, Air Bubble, Fury Wind, Fury Wind
 end-enemy
 Items on level
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 

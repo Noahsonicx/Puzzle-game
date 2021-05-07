@@ -101,8 +101,8 @@ Enemies on Level
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 end-enemy-loc
 EnemiesStatistics
-e1,Elemont2,15,15
-e2,Elemont,15,15
+e1,Elemont2,15,15, Pound,Pound,Fist Barrage, Fist Barrage 
+e2,Elemont,15,15, Fire Dance, Fire Blast, Blaze, Blaze
 end-enemy
 Items on level
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
