@@ -836,7 +836,10 @@ public class WorldManager : MonoBehaviour
         switch (st.GetStateName())
         {
             case "Attack":
-                //Debug.Log("Got you now bitch");
+
+                Attack stAttack = (Attack)st;
+
+
 
 
 
@@ -859,53 +862,55 @@ public class WorldManager : MonoBehaviour
                 ////        // Add more stats later   
                 ////        break;
 
-                break;
-            case "Move Left":
-                // Find Enemy Location
-                new_enemy_loc.Item1 -= 1.0f;
-                // Move enemy to new location;
-                _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
-                world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
-                world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
-                // Set old location to empty object
-                _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
-                break;
-            case "Move Down":
-                // Find Enemy Location
-                new_enemy_loc.Item2 -= 1.0f;
-                // Move enemy to new location;
-                _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
-                world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
-                world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
-                // Set old location to empty object
-                _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
-                break;
-            case "Move Right":
-                // Find Enemy Location
-                new_enemy_loc.Item1 += 1.0f;
-                // Move enemy to new location;
-                _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
-                world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
-                world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
-                // Set old location to empty object
-                _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
-                break;
-            case "Move Up":
-                // Find Enemy Location
-                new_enemy_loc.Item2 += 1.0f;
-                // Move enemy to new location;
-                _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
-                world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
-                world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
-                // Set old location to empty object
-                _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
-                break;
-            case "Cant Move":
-                break;
-            case "Pass":
-                break;
-            default:
-                break;
+            break;
+            case ("Walk"):
+                
+                Walk st_Walk = (Walk)st;
+                switch (st_Walk.GetDirection())
+                {
+
+                    case "Left":
+                        // Find Enemy Location
+                        new_enemy_loc.Item1 -= 1.0f;
+                        // Move enemy to new location;
+                        _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
+                        world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
+                        world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
+                        // Set old location to empty object
+                        _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
+                        break;
+                    case "Down":
+                        // Find Enemy Location
+                        new_enemy_loc.Item2 -= 1.0f;
+                        // Move enemy to new location;
+                        _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
+                        world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
+                        world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
+                        // Set old location to empty object
+                        _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
+                        break;
+                    case "Right":
+                        // Find Enemy Location
+                        new_enemy_loc.Item1 += 1.0f;
+                        // Move enemy to new location;
+                        _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
+                        world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
+                        world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
+                        // Set old location to empty object
+                        _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
+                        break;
+                    case "Up":
+                        // Find Enemy Location
+                        new_enemy_loc.Item2 += 1.0f;
+                        // Move enemy to new location;
+                        _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
+                        world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
+                        world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
+                        // Set old location to empty object
+                        _Enemy.GetComponent<EnemyMovement>().SetLocation(new_enemy_loc.Item1, new_enemy_loc.Item2);
+                        break;
+                }
+            break;   
         }
     }
 }

@@ -14,7 +14,7 @@ public class EnemyMovement : MonoBehaviour
     public TextMeshProUGUI health_text;
 
     private WorldElements[,] enemy_Array;
-    private Moveset[] attacks = new Moveset[1];
+    private Moveset[] attacks = new Moveset[4];
 
     private GameObject EmptyObject;
 
@@ -119,7 +119,8 @@ public class EnemyMovement : MonoBehaviour
         (float, float) enemy_position;
         enemy_position.Item1 = currentVision / 2 - 0.5f;
         enemy_position.Item2 = currentVision / 2 - 0.5f;
-        State st = CheckToAttack(enemy_position);
+
+        State stAttack = CheckToAttack(enemy_position);
 
         // Will go through each state until one is done in order of:
         // Attack (check if player in attack range)
@@ -127,21 +128,27 @@ public class EnemyMovement : MonoBehaviour
         // --> Pass (produces this if player is not in vision range or move range)
 
         // First check if to Attack
-        if (CheckToAttack(enemy_position))
+
+        if (stAttack != null && stAttack.GetStateName().Contains("Attack") )
         {
-            return ;
+            return stAttack;
         }
 
         // Second check to move if enemy is in vision and to Move (or not if it cant move towards the player).
-        string Movedirection = CheckToMove(enemy_position);
-        if (!Movedirection.Contains("Stay"))
+        State stMove = CheckToMove(enemy_position);
+        if (!stMove.GetStateName().Contains("Stay"))
         {
-            print(Movedirection);
-            return Movedirection;
+            print(stMove.GetStateName());
+            if (stMove.GetStateName().Contains("Walk"))
+            {
+                Walk stWalk = (Walk)stMove;
+                print(stWalk.GetDirection());
+                return stMove;
+            }
         }
 
         // Third if neither the enemy will either rest or pass turn.
-        return "Pass";
+        return stMove;
     }
 
 
@@ -180,10 +187,10 @@ public class EnemyMovement : MonoBehaviour
                         //Debug.Log("Player is in range");
                         // Will attack player unless otherwise stated.
 
-                        Moveset[(int)RandomRange(0, 3).value];
-
-                        State st = new Attack(FindObjectOfType<PlayerMovement>(), );
-
+                        Moveset move = attacks[(int)Random.Range(0, 3)];
+                        Debug.Log("Move is:" + move.GetMoveName());
+                        State st = new Attack(FindObjectOfType<PlayerMovement>().gameObject, move);
+                        
                         return st;
                     }
                 }
@@ -255,12 +262,12 @@ public class EnemyMovement : MonoBehaviour
                 if (Random.value < .5)
                 {
                     Debug.Log("Check from bottom left quadrant tells to move left by chance");
-                    return "Move Left";
+                    return new Walk("Left");
                 }
                 else
                 {
-                    Debug.Log("Check from bottom left quadrant tells to move right by chance");
-                    return "Move Down";
+                    Debug.Log("Check from bottom left quadrant tells to move down by chance");
+                    return new Walk("Down");
                 }
             }
             // If below is blocked off.
@@ -268,20 +275,20 @@ public class EnemyMovement : MonoBehaviour
                     !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
             {
                 Debug.Log("Check from bottom left quadrant tells to move left since down is blocked off");
-                return "Move Left";
+                return new Walk("Left");
             }
             // If left is blocked off.
             else if (!IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
                     IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
             {
                 Debug.Log("Check from bottom left quadrant tells to move down since left is blocked off");
-                return "Move Down";
+                return new Walk("Down");
             }
             // If it gets to here, the enemy can not get to the player (as there is probs a wall or enemy in the way) and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
             else
             {
                 Debug.Log("Check from bottom left quadrant tells to not move");
-                return "Cant Move";
+                return new Stay();
             }
         }
 
@@ -301,12 +308,12 @@ public class EnemyMovement : MonoBehaviour
                 if (Random.value < .5)
                 {
                     Debug.Log("Check from bottom right quadrant tells to move right by chance");
-                    return "Move Right";
+                    return new Walk("Right");
                 }
                 else
                 {
                     Debug.Log("Check from bottom right quadrant tells to move down by chance");
-                    return "Move Down";
+                    return new Walk("Down");
                 }
             }
             // If below is blocked off.
@@ -314,20 +321,20 @@ public class EnemyMovement : MonoBehaviour
                     !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
             {
                 Debug.Log("Check from bottom right quadrant tells to move right since down is blocked");
-                return "Move Right";
+                return new Walk("Right");
             }
             // If left is blocked off.
             else if (!IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
                     IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 - 1f))
             {
                 Debug.Log("Check from bottom right quadrant tells to move down since right is blocked");
-                return "Move Down";
+                return new Walk("Down");
             }
             // If it gets to here, the enemy can not get to the player (as there is probs a wall or enemy in the way) and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
             else
             {
                 Debug.Log("Check from bottom right quadrant tells to not move");
-                return "Cant Move";
+                return new Walk("Stay");
             }
         }
 
@@ -347,12 +354,12 @@ public class EnemyMovement : MonoBehaviour
                 if (Random.value < .5)
                 {
                     Debug.Log("Check from top right quadrant tells to move right by chance");
-                    return "Move Right";
+                    return new Walk("Right");
                 }
                 else
                 {
                     Debug.Log("Check from top right quadrant tells to move up by chance");
-                    return "Move Up";
+                    return new Walk("Up");
                 }
             }
             // If below is blocked off.
@@ -360,20 +367,20 @@ public class EnemyMovement : MonoBehaviour
                     !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
             {
                 Debug.Log("Check from top right quadrant tells to move right since up is blocked");
-                return "Move Right";
+                return new Walk("Right");
             }
             // If left is blocked off.
             else if (!IsLocationFreeToMove(_enemy_position.Item1 + 1f, _enemy_position.Item2) &&
                     IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
             {
                 Debug.Log("Check from top right quadrant tells to move up since right is blocked");
-                return "Move Up";
+                return new Walk("Up");
             }
             // If it gets to here, the enemy can not get to the player (as there is probs a wall or enemy in the way) and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
             else
             {
                 Debug.Log("Check from top right quadrant tells to not move");
-                return "Cant Move";
+                return new Stay();
             }
         }
 
@@ -393,12 +400,12 @@ public class EnemyMovement : MonoBehaviour
                 if (Random.value < .5)
                 {
                     Debug.Log("Check from top left quadrant tells to move left by chance");
-                    return "Move Left";
+                    return new Walk("Left");
                 }
                 else
                 {
                     Debug.Log("Check from top left quadrant tells to move up by chance");
-                    return "Move Up";
+                    return new Walk("Up");
                 }
             }
             // If below is blocked off.
@@ -406,20 +413,20 @@ public class EnemyMovement : MonoBehaviour
                     !IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
             {
                 Debug.Log("Check from top left quadrant tells to move left since up is blocked");
-                return "Move Left";
+                return new Walk("Left");
             }
             // If left is blocked off.
             else if (!IsLocationFreeToMove(_enemy_position.Item1 - 1f, _enemy_position.Item2) &&
                     IsLocationFreeToMove(_enemy_position.Item1, _enemy_position.Item2 + 1f))
             {
                 Debug.Log("Check from top left quadrant tells to move up since left is blocked");
-                return "Move Up";
+                return new Walk("Up");
             }
             // If it gets to here, the enemy can not get to the player (as there is probs a wall or enemy in the way) and will "Cant Move" (what ever that will be)(probs stay aggressive but pass).
             else
             {
                 Debug.Log("Check from top left quadrant tells to not move");
-                return "Cant Move";
+                return new Stay();
             }
         }
 
@@ -451,25 +458,25 @@ public class EnemyMovement : MonoBehaviour
                 {
                     if (Random.value < .5)
                     {
-                        return "Move Up";
+                        return new Walk("Up");
                     }
                     else
                     {
-                        return "Move Down";
+                        return new Walk("Down");
                     }
                 }
-                else if (isDownOpen) return "Move Down";
-                else if (isUpOpen) return "Move Up";
+                else if (isDownOpen) return new Walk("Down");
+                else if (isUpOpen) return new Walk("Up");
                 else
                 {
                     // Up and down also closed off
-                    return "Move Right Or Can't Move";
+                    return new Stay();
                 }
 
             }
             else
             {
-                return "Move Left";
+                return new Walk("Left");
             }
         }
         if (player_location.Item1 > quadrantSize && player_location.Item1 < currentVision && player_location.Item2 == quadrantSize)
@@ -495,23 +502,24 @@ public class EnemyMovement : MonoBehaviour
                 {
                     if (Random.value < .5)
                     {
-                        return "Move Up";
+                        return new Walk("Up");
+                        
                     }
                     else
                     {
-                        return "Move Down";
+                        return new Walk("Down");
                     }
                 }
-                else if (isDownOpen) return "Move Down";
-                else if (isUpOpen) return "Move Up";
+                else if (isDownOpen) return new Walk("Down");
+                else if (isUpOpen) return new Walk("Up");
                 else
                 {
                     // Up and down also closed off
-                    return "Move Left Or Can't Move";
+                    return new Stay();
                 }
 
             }
-            else return "Move Right";
+            else return new Walk("Right");
         }
         if (player_location.Item2 > quadrantSize && player_location.Item2 < currentVision && player_location.Item1 == quadrantSize)
         {
@@ -535,23 +543,23 @@ public class EnemyMovement : MonoBehaviour
                 {
                     if (Random.value < .5)
                     {
-                        return "Move Left";
+                        return new Walk("Left");
                     }
                     else
                     {
-                        return "Move Right";
+                        return new Walk("Right");
                     }
                 }
-                else if (isLeftOpen) return "Move Left";
-                else if (isRightOpen) return "Move Right";
+                else if (isLeftOpen) return new Walk("Left");
+                else if (isRightOpen) return new Walk("Right");
                 else if (!isLeftOpen && !isRightOpen)
                 {
                     // Up and down also closed off
-                    return "Move Down Or Can't Move";
+                    return new Stay();
                 }
 
             }
-            else return "Move Up";
+            else return new Walk("Up");
         }
         if (player_location.Item2 < quadrantSize && player_location.Item2 >= 0 && player_location.Item1 == quadrantSize)
         {
@@ -575,31 +583,31 @@ public class EnemyMovement : MonoBehaviour
                 {
                     if (Random.value < .5)
                     {
-                        return "Move Left";
+                        return new Walk("Left");
                     }
                     else
                     {
-                        return "Move Right";
+                        return new Walk("Right");
                     }
                 }
-                else if (isLeftOpen) return "Move Left";
-                else if (isRightOpen) return "Up Right";
+                else if (isLeftOpen) return new Walk("Left");
+                else if (isRightOpen) return new Walk("Right");
                 else
                 {
                     // Up and down also closed off
-                    return "Move Up Or Can't Move";
+                    return new Stay();
                 }
 
             }
-            else return "Move Down";
+            else return new Walk("Down");
         }
 
         // 1-1-1
         // 1-0-1
         // 1-1-1
         // If the player isn't in range it will say this.
-        Debug.Log("PlayerLocation is: " + player_location.Item1 + "/" + player_location.Item2);
-        return "Player Not In Range";
+        Debug.Log("Player Not In Range, PlayerLocation is: " + player_location.Item1 + "/" + player_location.Item2);
+        return new Stay();
     }
 
     // Only called in "CheckPlayerInRange"
