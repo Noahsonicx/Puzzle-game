@@ -43,6 +43,8 @@ public class SaveManager : MonoBehaviour
             enemy_info = enemy_name;
             enemy_info += "," + em.GetLocation().Item1.ToString() + "," + em.GetLocation().Item2.ToString();
             enemy_info += "," + em.GetCurrentHealth() + "," + em.GetMaxHealth();
+            foreach(Moveset ms)
+            enemy_name == "," + em.
             sr.WriteLine(enemy_info);
         }
 

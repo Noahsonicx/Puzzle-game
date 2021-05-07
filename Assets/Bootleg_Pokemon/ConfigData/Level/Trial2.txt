@@ -21,9 +21,9 @@ Enemies on Level
 -- -- -- -- -- -- -- --
 end-enemy-loc
 EnemiesStatistics
-e1,Elemont2,15,15
-e2,Elemont,15,15
-e3,Elemont,15,15
+e1,Elemont2,15,15,Blaze,Blaze,Blaze,Blaze
+e2,Elemont,15,15,Pound,Pound,Pound,Pound
+e3,Elemont,15,15,Pound,Pound,Pound,Pound
 end-enemy
 Items on level
 -- -- -- -- -- -- -- --

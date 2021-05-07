@@ -1,0 +1,6 @@
+saveslot0
+Dungeonname: Trial
+PlayerStatistics:
+Elemont,4,5,20,20,8,8
+PlayerMoveset:
+Blaze,Pound,Bless,Fire Dance

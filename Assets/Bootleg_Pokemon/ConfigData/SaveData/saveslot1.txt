@@ -1,11 +1,9 @@
 saveslot1
-DungeonName = Trial2
+DungeonName: Trial
 Enemies on Level
-Elemont2,1,6,15,15
-Elemont,2,2,15,20
-Elemont,6,4,15,20
+Elemont2,2,2,15,15
 end-enemy
 PlayerStatistics:
-Elemont,4,1,15,20,0,8
+Elemont,4,5,20,20,8,8
 PlayerMoveset:
 Blaze,Pound,Bless,Fire Dance

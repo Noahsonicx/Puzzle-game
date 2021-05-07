@@ -24,14 +24,20 @@ public class WorldManager : MonoBehaviour
         public (float, float) enemy_loc;
         public float cur_health;
         public float max_health;
-        //TODO: Add Moveset once implemented on enemy movement
-
-        public EnemyConstruct(string _key, float _x, float _y, float _cur_h, float _max_h)
+        public string move1;
+        public string move2;
+        public string move3;
+        public string move4;
+        public EnemyConstruct(string _key, float _x, float _y, float _cur_h, float _max_h, string m1, string m2, string m3, string m4 )
         {
             elemontal_key = _key;
             enemy_loc = (_x,_y);
             cur_health = _cur_h;
             max_health = _max_h;
+            move1 = m1;
+            move2 = m2;
+            move3 = m3;
+            move4 = m4;
         }
     }
     public struct PlayerConstruct
@@ -102,6 +108,7 @@ public class WorldManager : MonoBehaviour
 
     public GameObject[] enemy_around_player_list;
     public GameObject EmptyObject;
+    public bool playerDead = false;
 
     // UI for player action
     public GameObject AttackButton;
@@ -229,6 +236,7 @@ public class WorldManager : MonoBehaviour
         pl_movement.SetMovesetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
         pl_movement.SetEnemyTargetUI(target_enemy_panel, target_e1, target_e2, target_e3, target_e4, target_e5, target_e6, target_e7, target_e8);
         player.gameObject.tag = "Player";
+        player_loc = player_construct.player_loc;
     }
     private void SpawnEnemy()
     {
@@ -255,6 +263,10 @@ public class WorldManager : MonoBehaviour
                 Debug.Log("Enemy = CurHealth: " + ec.cur_health);
                 tmp_enemy.GetComponent<EnemyMovement>().SetCurrentHealth(ec.cur_health);
                 tmp_enemy.GetComponent<EnemyMovement>().SetMaxHealth(ec.max_health);
+                tmp_enemy.GetComponent<EnemyMovement>().LearnMove(0, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(ec.move1));
+                tmp_enemy.GetComponent<EnemyMovement>().LearnMove(1, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(ec.move2));
+                tmp_enemy.GetComponent<EnemyMovement>().LearnMove(2, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(ec.move3));
+                tmp_enemy.GetComponent<EnemyMovement>().LearnMove(3, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(ec.move4));
                 world_array[(int)ec.enemy_loc.Item1, (int)ec.enemy_loc.Item2].character = tmp_enemy;
                 enemy_list.Add(tmp_enemy);
                 enemy_ID++;
@@ -267,55 +279,60 @@ public class WorldManager : MonoBehaviour
     private void TurnSystem()
     {
         //Debug.Log("In Turn System");
-        if (player_turn)
+        if (!playerDead)
         {
-            //Debug.Log("Waiting for player input");
-            // Wait for player input
-            if (Input.GetKeyDown("w") || Input.GetKeyDown("a") || Input.GetKeyDown("s") || Input.GetKeyDown("d"))
+            if (player_turn)
             {
-                Debug.Log("Input Key pressed");
-                player_state = player.GetComponent<PlayerMovement>().Move();
-
-                if (player_state == null) return;
-                else
+                GetEnemyAroundPlayer();
+                player.GetComponent<PlayerMovement>().SetEnemyList(enemy_around_player_list);
+                //Debug.Log("Waiting for player input");
+                // Wait for player input
+                if (Input.GetKeyDown("w") || Input.GetKeyDown("a") || Input.GetKeyDown("s") || Input.GetKeyDown("d"))
                 {
-                    if (PlayerAction(player_state))
+                    Debug.Log("Input Key pressed");
+                    player_state = player.GetComponent<PlayerMovement>().Move();
+
+                    if (player_state == null) return;
+                    else
                     {
-                        
-                        player_state = null;
-                        player_turn = false;
-                        enemy_turn = true;
+                        if (PlayerAction(player_state))
+                        {
+
+                            player_state = null;
+                            player_turn = false;
+                            enemy_turn = true;
+                        }
                     }
                 }
-            }
-            if (decide_to_attack && enemy_around_player)
-            {
-                Debug.Log("Player attacking");
-                //Debug.Log("Player is looking to attack");
-                player_state = player.GetComponent<PlayerMovement>().Attack();
-                if(player_state != null)
+                if (decide_to_attack && enemy_around_player)
                 {
-                    Debug.Log("State received");
-                    if (player_state.GetStateName().Equals("Attack")) Debug.Log("State is Attack");
-                    if(PlayerAction(player_state))
+                    Debug.Log("Player attacking");
+                    //Debug.Log("Player is looking to attack");
+                    player_state = player.GetComponent<PlayerMovement>().Attack();
+                    if (player_state != null)
                     {
-                        player_turn = false;
-                        enemy_turn = true;
-                        decide_to_attack = false;  
-                    }
+                        Debug.Log("State received");
+                        if (player_state.GetStateName().Equals("Attack")) Debug.Log("State is Attack");
+                        if (PlayerAction(player_state))
+                        {
+                            player_turn = false;
+                            enemy_turn = true;
+                            decide_to_attack = false;
+                        }
 
+                    }
                 }
+
             }
 
+            if (enemy_turn)
+            {
+                TakeEnemyTurn();
+                enemy_turn = false;
+                player_turn = true;
+            }
         }
-
-        if(enemy_turn)
-        {
-            TakeEnemyTurn();
-            enemy_turn = false;
-            player_turn = true;
-        }
-        //Debug.Log("C_Hp: " + player.GetComponent<PlayerMovement>().GetCurrentHealth());
+        
     }
 
     public int CountNumberOfEnemiesAroundPlayer()
@@ -348,20 +365,35 @@ public class WorldManager : MonoBehaviour
         {
             //Debug.Log("There is an enemy on top");
             enemy_around_player_list[0] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2 + 1].character); //Get top enemy
+            if (enemy_around_player == EmptyObject) Debug.Log("No Enemy Found");
+            else
+            {
+                Debug.Log("Enemy at, X:" + (int)player_loc.Item1 + "Y: " + ((int)player_loc.Item2 + 1));
+            }
         }
         else enemy_around_player_list[0] = EmptyObject; //Get top enemy
 
         if (!world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.name.Equals(EmptyObject.name) && world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on top");
-            enemy_around_player_list[1] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character); //Get top enemy
+            enemy_around_player_list[1] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 + 1].character); //Get top-right enemy
+            if (enemy_around_player == EmptyObject) Debug.Log("No Enemy Found");
+            else
+            {
+                Debug.Log("Enemy at, X:" + ((int)player_loc.Item1 + 1) + "Y: " + ((int)player_loc.Item2 + 1));
+            }
         }
-        else enemy_around_player_list[1] = EmptyObject; //Get top enemy
+        else enemy_around_player_list[1] = EmptyObject; //Get top right enemy
 
         if (!world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].character.gameObject.name.Equals(EmptyObject.name)&& world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy on right");
             enemy_around_player_list[2] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2].character); //Get right enemy
+            if (enemy_around_player == EmptyObject) Debug.Log("No Enemy Found");
+            else
+            {
+                Debug.Log("Enemy at, X:" + ((int)player_loc.Item1 + 1) + "Y: " + (int)player_loc.Item2);
+            }
         }
         else enemy_around_player_list[2] = EmptyObject; //Get right enemy
 
@@ -369,6 +401,11 @@ public class WorldManager : MonoBehaviour
         {
             //Debug.Log("There is an enemy on right");
             enemy_around_player_list[3] = (world_array[(int)player_loc.Item1 + 1, (int)player_loc.Item2 - 1].character); //Get bottom-right enemy
+            if (enemy_around_player == EmptyObject) Debug.Log("No Enemy Found");
+            else
+            {
+                Debug.Log("Enemy at, X:" + ((int)player_loc.Item1 + 1) + "Y: " + ((int)player_loc.Item2 - 1));
+            }
         }
         else enemy_around_player_list[3] = EmptyObject; //Get bottom-right enemy
         
@@ -376,6 +413,11 @@ public class WorldManager : MonoBehaviour
         {
             //Debug.Log("There is an enemy to the bottom");
             enemy_around_player_list[4] = (world_array[(int)player_loc.Item1, (int)player_loc.Item2-1].character); //Get bottom enemy
+            if (enemy_around_player == EmptyObject) Debug.Log("No Enemy Found");
+            else
+            {
+                Debug.Log("Enemy at, X:" + ((int)player_loc.Item1) + "Y: " + ((int)player_loc.Item2 - 1));
+            }
         }
         else enemy_around_player_list[4] = EmptyObject; //Get bottom enemy
 
@@ -383,6 +425,11 @@ public class WorldManager : MonoBehaviour
         {
             //Debug.Log("There is an enemy to the bottom");
             enemy_around_player_list[5] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 - 1].character); //Get bottom-left enemy
+            if (enemy_around_player == EmptyObject) Debug.Log("No Enemy Found");
+            else
+            {
+                Debug.Log("Enemy at, X:" + ((int)player_loc.Item1 - 1) + "Y: " + ((int)player_loc.Item2 - 1));
+            }
         }
         else enemy_around_player_list[5] = EmptyObject; //Get bottom-left enemy
 
@@ -390,15 +437,25 @@ public class WorldManager : MonoBehaviour
         {
             //Debug.Log("There is an enemy to the left");
             enemy_around_player_list[6] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2].character); //Get left enemy
+            if (enemy_around_player == EmptyObject) Debug.Log("No Enemy Found");
+            else
+            {
+                Debug.Log("Enemy at, X:" + ((int)player_loc.Item1 - 1) + "Y: " + ((int)player_loc.Item2));
+            }
         }
         else enemy_around_player_list[6] = (EmptyObject); //Get left enemy
 
         if (!world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character.gameObject.name.Equals(EmptyObject.name) && world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character.gameObject.tag == "Enemy")
         {
             //Debug.Log("There is an enemy to the left");
-            enemy_around_player_list[7] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character); //Get left enemy
+            enemy_around_player_list[7] = (world_array[(int)player_loc.Item1 - 1, (int)player_loc.Item2 + 1].character); //Get top-left enemy
+            if (enemy_around_player == EmptyObject) Debug.Log("No Enemy Found");
+            else
+            {
+                Debug.Log("Enemy at, X:" + ((int)player_loc.Item1 - 1) + "Y: " + ((int)player_loc.Item2 + 1));
+            }
         }
-        else enemy_around_player_list[7] = (EmptyObject); //Get left enemy
+        else enemy_around_player_list[7] = (EmptyObject); //Get top-left enemy
    
 
         if (CountNumberOfEnemiesAroundPlayer() != 0)
@@ -445,9 +502,6 @@ public class WorldManager : MonoBehaviour
                             player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
                             decide_to_attack = false;
-
-                            GetEnemyAroundPlayer();
-                            player.GetComponent<PlayerMovement>().SetEnemyList(enemy_around_player_list);
                             player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                             ResetUI();
 
@@ -475,9 +529,7 @@ public class WorldManager : MonoBehaviour
                             player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
                             decide_to_attack = false;
-
-                            GetEnemyAroundPlayer();
-                            player.GetComponent<PlayerMovement>().SetEnemyList(enemy_around_player_list);
+                            Debug.Log("Getting Enemy Around player");
                             player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                             ResetUI();
                             
@@ -502,9 +554,6 @@ public class WorldManager : MonoBehaviour
                             player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
                             decide_to_attack = false;
-
-                            GetEnemyAroundPlayer();
-                            player.GetComponent<PlayerMovement>().SetEnemyList(enemy_around_player_list);
                             player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                             ResetUI();
                           
@@ -527,10 +576,7 @@ public class WorldManager : MonoBehaviour
                             player_loc = new_player_loc;
                             player.GetComponent<PlayerMovement>().SetPlayerLocation(new_player_loc);
                             move_success = true;
-                            decide_to_attack = false;
-
-                            GetEnemyAroundPlayer();
-                            player.GetComponent<PlayerMovement>().SetEnemyList(enemy_around_player_list);
+                            decide_to_attack = false;                            
                             player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                             ResetUI();
                             
@@ -641,9 +687,9 @@ public class WorldManager : MonoBehaviour
     {
         asset_construct.Add(new EnvironmentContruct(_key, _loc));        
     }
-    public void LoadEnemies(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp)
+    public void LoadEnemies(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, string m1, string m2, string m3, string m4)
     {
-        enemy_construct.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp));
+        enemy_construct.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, m1, m2 , m3, m4));
     }
  
     public void LoadPlayer(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, float _cur_energy, float _max_energy,string m1, string m2, string m3, string m4)
@@ -839,9 +885,22 @@ public class WorldManager : MonoBehaviour
 
                 Attack stAttack = (Attack)st;
 
+                Debug.Log("Target is:" + stAttack.target + "Move is:" + stAttack.move.GetMoveName());
 
-
-
+                switch(stAttack.move.GetStatAffected())
+                {
+                    case "Health":
+                        stAttack.target.GetComponent<PlayerMovement>().TakeDamage(stAttack.move.GetValue());
+                        if(stAttack.target.GetComponent<PlayerMovement>().GetCurrentHealth() <= 0)
+                        {
+                            float tmp_x = stAttack.target.GetComponent<PlayerMovement>().GetPlayerLocation().Item1;
+                            float tmp_y = stAttack.target.GetComponent<PlayerMovement>().GetPlayerLocation().Item2;
+                            Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
+                            world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
+                            playerDead = true;
+                        }
+                        break;
+                }
 
                 ////Debug.Log("Target is Player");
                 ////switch (atk_state.move.GetStatAffected())

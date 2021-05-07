@@ -42,6 +42,10 @@ public class EnemyMovement : MonoBehaviour
     {
         return location;
     }
+    public Moveset[] GetMoves()
+    {
+        return attacks;
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -138,7 +142,7 @@ public class EnemyMovement : MonoBehaviour
         State stMove = CheckToMove(enemy_position);
         if (!stMove.GetStateName().Contains("Stay"))
         {
-            print(stMove.GetStateName());
+            //print(stMove.GetStateName());
             if (stMove.GetStateName().Contains("Walk"))
             {
                 Walk stWalk = (Walk)stMove;
@@ -651,5 +655,11 @@ public class EnemyMovement : MonoBehaviour
         }
 
         Debug.Log("In EM, Counter:" + counter);
+    }
+
+    public void LearnMove(int index, Moveset move)
+    {
+        // This should pull a warning if trying to delete and learn a move
+        attacks[index] = move;
     }
 }
