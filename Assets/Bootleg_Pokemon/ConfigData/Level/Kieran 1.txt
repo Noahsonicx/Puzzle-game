@@ -29,29 +29,27 @@ Enemies on Level
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 -- -- -- -- -- e1 -- -- -- -- -- -- -- -- -- -- -- -- -- 
--- -- -- -- -- -- -- -- -- -- -- -- -- e5 -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
--- -- -- -- -- -- e2 -- e3 e4 -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- e2 -- e3 -- -- -- -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- e7 -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
--- -- -- -- e9 -- -- -- -- -- e8 -- -- -- -- -- -- -- -- 
+-- -- -- -- e4 -- -- -- -- -- e5 -- -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 end-enemy-loc
 EnemiesStatistics
-e1,Elemont2,15,15
-e2,Elemont,15,15
-e3,Elemont,15,15
-e4,Elemont,15,15
-e5,Elemont,15,15
-e6,Elemont,15,15
-e7,Elemont,15,15
-e8,Elemont,15,15
-e9,Elemont,15,15
+e1,Elemont2,15,15, Ice Wall, Ice Shot, Water Whip, Water Whip
+e2,Elemont,15,15, Earth Tomb, Plate Shot, Rock Barrage, Rock Barrage
+e3,Elemont,15,15, Air Sphere Shot, Air Bubble, Fury Wind, Fury Wind
+e4,Elemont,15,15, Fire Dance, Fire Blast, Blaze, Blaze
+e5,Elemont,15,15, Pound,Pound,Fist Barrage, Fist Barrage
+e6,Elemont,15,15, Pound,Pound,Fist Barrage, Fist Barrage
+e7,Elemont,15,15, Pound,Pound,Fist Barrage, Fist Barrage
 end-enemy
 Items on level
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
