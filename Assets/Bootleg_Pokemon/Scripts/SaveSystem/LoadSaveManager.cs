@@ -37,7 +37,8 @@ public class LoadSaveManager : MonoBehaviour
     public void LoadFromSave(string filename)
     {
         wm.ResetWorld();
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\SaveData\" + filename + ".txt";
+        string path = @"..\Elemontons - Matt & Co - Combined - As2\Assets\Bootleg_Pokemon\ConfigData" + filename + ".txt";
+        //string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\SaveData\" + filename + ".txt";
         using FileStream fs = File.OpenRead(path);
         using var sr = new StreamReader(fs);
         

@@ -34,6 +34,8 @@ public class MoveSetDictionary : MonoBehaviour
         Moveset move19 = new Moveset("Wind Tunnel Blast", "Wind", "Enemy", "Health", 12.0f, 10.0f);
         Moveset move20 = new Moveset("Fist Barrage", "Normal", "Enemy", "Health", 3.0f, 2.0f);
 
+        // Enimes 
+
         // Add to List first
         move_list.Add(move0);
         move_list.Add(move1);
