@@ -1,5 +1,5 @@
-Dungeon Name: Kieran 2
-Next Dungeon Name: Kieran 3
+Dungeon Name: Kieran 3
+Next Dungeon Name: Trial
 Dungeon Size: 69, 69
 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 
 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 w0 
@@ -147,23 +147,23 @@ Enemies on Level
 
 end-enemy-loc
 EnemiesStatistics
-e1,Elemont2,15,15
-e2,Elemont,15,15
-e3,Elemont,15,15
-e4,Elemont,15,15
-e5,Elemont,15,15
-e6,Elemont,15,15
-e7,Elemont,15,15
-e8,Elemont,15,15
-e9,Elemont,15,15
-e10,Elemont,15,15
-e11,Elemont,15,15
-e12,Elemont,15,15
-e13,Elemont,15,15
-e14,Elemont,15,15
-e15,Elemont,15,15
-e16,Elemont,15,15
-e17,Elemont,15,15
+e1,Elemont2,15,15, Ice Wall, Ice Shot, Water Whip, Water Whip
+e2,Elemont,15,15, Earth Tomb, Plate Shot, Rock Barrage, Rock Barrage
+e3,Elemont,15,15, Air Sphere Shot, Air Bubble, Fury Wind, Fury Wind
+e4,Elemont,15,15, Fire Dance, Fire Blast, Blaze, Blaze
+e5,Elemont,15,15, Pound,Pound,Fist Barrage, Fist Barrage
+e6,Elemont,15,15, Ice Wall, Ice Shot, Water Whip, Water Whip
+e7,Elemont,15,15, Earth Tomb, Plate Shot, Rock Barrage, Rock Barrage
+e8,Elemont,15,15, Air Sphere Shot, Air Bubble, Fury Wind, Fury Wind
+e9,Elemont,15,15, Fire Dance, Fire Blast, Blaze, Blaze
+e10,Elemont,15,15, Pound,Pound,Fist Barrage, Fist Barrage
+e11,Elemont,15,15, Fire Dance, Fire Blast, Blaze, Blaze
+e12,Elemont,15,15, Air Sphere Shot, Air Bubble, Fury Wind, Fury Wind
+e13,Elemont,6,6, Earth Tomb, Plate Shot, Rock Barrage, Full Earthquake
+e14,Elemont,6,6, Air Sphere Shot, Air Bubble, Fury Wind, Wind Tunnel Blast
+e15,Elemont,15,15, Pound, Pound, Fist Barrage, Fist Barrage
+e16,Elemont,6,6, Ice Wall, Ice Shot, Water Whip, Tidal Wave
+e17,Elemont,6,6, Fire Dance, Fire Blast, Blaze, Fullever Blaze
 
 end-enemy
 Items on level
