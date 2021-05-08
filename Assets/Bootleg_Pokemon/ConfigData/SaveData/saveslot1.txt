@@ -5,6 +5,6 @@ Elemont2,1,5,15,15,Blaze,Blaze,Blaze,Blaze
 Elemont,3,2,20,20,Pound,Pound,Pound,Pound
 end-enemy
 PlayerStatistics:
-Elemont,4,5,20,20,8,8
+Elemont,4,3,10,20,8,8
 PlayerMoveset:
 Blaze,Pound,Bless,Fire Dance

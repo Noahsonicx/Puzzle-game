@@ -3,9 +3,24 @@ using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using UnityEngine;
+using TMPro;
 
 public class WorldManager : MonoBehaviour
 {
+    public struct EnemyData
+    {
+        public string enemy_ID;
+        public float x;
+        public float y;
+
+        public EnemyData(string _id, float _x, float _y)
+        {
+            enemy_ID = _id;
+            x = _x;
+            y = _y;
+        }
+    }
+
     public struct EnvironmentContruct
     {
         public string asset_key;
@@ -81,6 +96,8 @@ public class WorldManager : MonoBehaviour
     private List<GameObject> enemy_list = new List<GameObject>();
     private GameObject player;
     public (float, float) player_loc;
+    public (float, float) player_locFromLevelCreation = (-1.0f, -1.0f);
+    public bool playerDead = false;
 
     //Construct used to hold data when loading
     public List<EnvironmentContruct> asset_construct = new List<EnvironmentContruct>();
@@ -108,7 +125,6 @@ public class WorldManager : MonoBehaviour
 
     public GameObject[] enemy_around_player_list;
     public GameObject EmptyObject;
-    public bool playerDead = false;
 
     // UI for player action
     public GameObject AttackButton;
@@ -132,6 +148,13 @@ public class WorldManager : MonoBehaviour
     public GameObject target_e7;
     public GameObject target_e8;
 
+    // Camera 
+    public GameObject mainCamera;
+
+    public void UpdateCameraLocation((float,float) _playerPos)
+    {
+        mainCamera.transform.position = new Vector3(spawn_location.x + _playerPos.Item1, spawn_location.y + _playerPos.Item2, spawn_location.z);
+    }
     // Start is called before the first frame update
     void Start()
     {       
@@ -165,7 +188,7 @@ public class WorldManager : MonoBehaviour
                     // Step 1:
                     // Add Dungeon Walls (By adding x,y location of each wall as a tuple into wall_location)
 
-                    SpawnWalls();
+                    SpawnEnvironment();
                     //Debug.Log("Finished Loading Walls");
                     // Step 2:
                     // Add Player into the world
@@ -187,7 +210,7 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    private void SpawnWalls()
+    private void SpawnEnvironment()
     {
         
         try
@@ -197,17 +220,29 @@ public class WorldManager : MonoBehaviour
                 GameObject prefab = environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetAsset(ec.asset_key);
                 if (prefab == null)
                 {
-                    throw (new AssetNotInDictionaryException("No Asset called: 'Wall' in Dictionary"));
+                    throw (new AssetNotInDictionaryException("No Asset called:"+ ec.asset_key + "in Dictionary"));
                 }
 
                 //TODO:
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ec.asset_loc.Item1, spawn_location.y + ec.asset_loc.Item2);
-                if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2] == null) Debug.Log("WorldArray is Empty for this slot" + (int)ec.asset_loc.Item1 + "/" + (int)ec.asset_loc.Item2);
-                if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment == null) Debug.Log("Environment of WorldElement is empty");
+                if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2] == null) Debug.LogError("WorldArray is Empty for this slot" + (int)ec.asset_loc.Item1 + "/" + (int)ec.asset_loc.Item2);
+                if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment == null) Debug.LogError("Environment field of WorldElement is empty");
                     world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
                 Debug.Log("Spawning wall at location: " + ec.asset_loc.Item1 + "/" + ec.asset_loc.Item2);
-                world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
-                
+                if (ec.asset_key.Contains("w")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
+                else if (ec.asset_key.Contains("g")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Ground";
+                else if (ec.asset_key.Contains("s"))
+                {
+                    world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Spawn";
+                    player_locFromLevelCreation = ec.asset_loc;
+                }
+                else if (ec.asset_key.Contains("n")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "NextLevelStair";
+                // Add More Tags above when spawning more environment element
+
+                world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.layer = 6;
+                world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.GetComponent<SpriteRenderer>().sortingLayerName = "Environment";
+
+
             }
         }
         catch(AssetNotInDictionaryException e)
@@ -219,12 +254,18 @@ public class WorldManager : MonoBehaviour
     private void SpawnPlayer()
     {
         // This should essentially save to file so that character stats are saved between levels and when loading game.
-        world_array[(int)player_construct.player_loc.Item1, (int)player_construct.player_loc.Item2].character = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_construct.player_loc.Item1, spawn_location.y + player_construct.player_loc.Item2), new Quaternion());
-        player = world_array[(int)player_construct.player_loc.Item1, (int)player_construct.player_loc.Item2].character;
+        if (player_construct.player_loc.Item1 == -1 || player_construct.player_loc.Item2 == -1)
+        {
+            player_loc = player_locFromLevelCreation;
+        }
+        else player_loc = player_construct.player_loc;
+
+        world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_loc.Item1, spawn_location.y + player_loc.Item2), new Quaternion());
+        player = world_array[(int)player_loc.Item1, (int)player_loc.Item2].character;
         player.name = playerPrefab.name + "| Player";
         player.AddComponent<PlayerMovement>();
         PlayerMovement pl_movement = player.GetComponent<PlayerMovement>();
-        pl_movement.SetPlayerLocation(player_construct.player_loc);
+        pl_movement.SetPlayerLocation(player_loc);
         pl_movement.SetCurrentHealth(player_construct.cur_health);
         pl_movement.SetMaxHealth(player_construct.max_health);
         pl_movement.SetCurrentEnergy(player_construct.cur_energy);
@@ -236,7 +277,10 @@ public class WorldManager : MonoBehaviour
         pl_movement.SetMovesetUI(AttackPanel, AttackMove1, AttackMove2, AttackMove3, AttackMove4);
         pl_movement.SetEnemyTargetUI(target_enemy_panel, target_e1, target_e2, target_e3, target_e4, target_e5, target_e6, target_e7, target_e8);
         player.gameObject.tag = "Player";
-        player_loc = player_construct.player_loc;
+        player.gameObject.layer = 8;
+        player.GetComponent<SpriteRenderer>().sortingLayerName = "Character";
+        player.GetComponentInChildren<Canvas>().sortingLayerName = "HUD";
+        UpdateCameraLocation(player_loc);
     }
     private void SpawnEnemy()
     {
@@ -258,6 +302,9 @@ public class WorldManager : MonoBehaviour
                 GameObject tmp_enemy = Instantiate(prefab, relative_spawn_loc, new Quaternion());
                 tmp_enemy.name = ec.elemontal_key + "| ID: " + enemy_ID;
                 tmp_enemy.gameObject.tag = "Enemy";
+                tmp_enemy.gameObject.layer = 8;
+                tmp_enemy.GetComponent<SpriteRenderer>().sortingLayerName = "Character";
+                tmp_enemy.GetComponentInChildren<Canvas>().sortingLayerName = "HUD";
                 tmp_enemy.AddComponent<EnemyMovement>();
                 tmp_enemy.GetComponent<EnemyMovement>().SetLocation(ec.enemy_loc.Item1, ec.enemy_loc.Item2);
                 Debug.Log("Enemy = CurHealth: " + ec.cur_health);
@@ -269,6 +316,17 @@ public class WorldManager : MonoBehaviour
                 tmp_enemy.GetComponent<EnemyMovement>().LearnMove(3, moveset_manager.GetComponent<MoveSetDictionary>().GetMoveset(ec.move4));
                 world_array[(int)ec.enemy_loc.Item1, (int)ec.enemy_loc.Item2].character = tmp_enemy;
                 enemy_list.Add(tmp_enemy);
+
+                TextMeshProUGUI[] textChildrens = tmp_enemy.GetComponentsInChildren<TextMeshProUGUI>();
+
+                foreach (TextMeshProUGUI text in textChildrens)
+                {
+                    if (text.gameObject.name == "Energy")
+                    {
+                        text.gameObject.SetActive(false);
+                    }
+                }
+
                 enemy_ID++;
             }
         } catch (AssetNotInDictionaryException e)
@@ -492,6 +550,12 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
+                            {
+                                // Player reached the stair for the next level
+                                InterimLevelSave();
+                                LoadNextLevel();
+                            }
                             //Debug.Log("Moving Player Up");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
@@ -505,8 +569,10 @@ public class WorldManager : MonoBehaviour
                             player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                             ResetUI();
 
+                            UpdateCameraLocation(player_loc);
+
                         }
-                        else if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] != null) Debug.Log("Up is not null");
+                        else if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2] == null) Debug.Log("Up is null");
                         else if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall")) Debug.Log("Up is a wall");
                         else if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy")) Debug.Log("Up is an enemy");
                         else Debug.Log("Something else broke");
@@ -520,6 +586,12 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
+                            {
+                                // Player reached the stair for the next level
+                                InterimLevelSave();
+                                LoadNextLevel();
+                            }
                             Debug.Log("Moving Player Down");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
@@ -532,6 +604,7 @@ public class WorldManager : MonoBehaviour
                             Debug.Log("Getting Enemy Around player");
                             player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                             ResetUI();
+                            UpdateCameraLocation(player_loc);
                             
                         }
                         else Debug.Log("There is a Wall Down");
@@ -544,6 +617,12 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
+                            {
+                                // Player reached the stair for the next level
+                                InterimLevelSave();
+                                LoadNextLevel();
+                            }
                             Debug.Log("Moving Player Left");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
@@ -556,7 +635,7 @@ public class WorldManager : MonoBehaviour
                             decide_to_attack = false;
                             player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                             ResetUI();
-                          
+                            UpdateCameraLocation(player_loc);                          
                         }
                         else Debug.Log("There is a Wall Left");
                         break;
@@ -568,6 +647,12 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
+                            {
+                                // Player reached the stair for the next level
+                                InterimLevelSave();
+                                LoadNextLevel();
+                            }
                             Debug.Log("Moving Player Right");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
@@ -579,7 +664,7 @@ public class WorldManager : MonoBehaviour
                             decide_to_attack = false;                            
                             player.GetComponent<PlayerMovement>().ResetMoveAndEnemy();
                             ResetUI();
-                            
+                            UpdateCameraLocation(player_loc);
                         }
                         else Debug.Log("There is a Wall Right");
                         break;
@@ -742,6 +827,7 @@ public class WorldManager : MonoBehaviour
         enemy_list.Clear();
         enemy_construct.Clear();
         asset_construct.Clear();
+        playerDead = false;
         PrepareWorld();
     }
 
@@ -971,5 +1057,171 @@ public class WorldManager : MonoBehaviour
                 }
             break;   
         }
+    }
+
+    public void LoadNextLevel()
+    {
+        ResetWorld();
+        string defaultSaveFilePath = Application.dataPath + @"\Bootleg_Pokemon\ConfigData\SaveData\interimsaveslot.txt";
+        FileStream fsInterim = File.OpenRead(defaultSaveFilePath);
+        StreamReader srInterim = new StreamReader(fsInterim);
+
+        string saveLine = srInterim.ReadLine();
+        saveLine = srInterim.ReadLine();
+        string currentDungeon = saveLine.Substring(saveLine.IndexOf(": ") + 2);
+
+        saveLine = srInterim.ReadLine();
+        if (saveLine != "PlayerStatistics:") Debug.LogError("Text Differs for: " + saveLine);
+        saveLine = srInterim.ReadLine();
+        string[] player_stat = saveLine.Split(',');
+        string player_elemont = player_stat[0];
+        float player_x = float.Parse(player_stat[1], CultureInfo.InvariantCulture.NumberFormat);
+        float player_y = float.Parse(player_stat[2], CultureInfo.InvariantCulture.NumberFormat);
+        float player_cur_hp = float.Parse(player_stat[3], CultureInfo.InvariantCulture.NumberFormat);
+        float player_max_hp = float.Parse(player_stat[4], CultureInfo.InvariantCulture.NumberFormat);
+        float player_cur_energy = float.Parse(player_stat[5], CultureInfo.InvariantCulture.NumberFormat);
+        float player_max_energy = float.Parse(player_stat[6], CultureInfo.InvariantCulture.NumberFormat);
+
+
+        saveLine = srInterim.ReadLine();
+        if (saveLine != "PlayerMoveset:") Debug.LogError("Text Differs for: " + saveLine);
+        saveLine = srInterim.ReadLine();
+        string[] player_moves = saveLine.Split(',');
+        string move1 = player_moves[0];
+        string move2 = player_moves[1];
+        string move3 = player_moves[2];
+        string move4 = player_moves[3];
+
+        LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4);
+
+        fsInterim.Close();
+        srInterim.Close();
+
+        string filename = GetNextDungeonName();
+        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\Level\" + filename + ".txt";
+        FileStream fs = File.OpenRead(path);
+        StreamReader sr = new StreamReader(fs);
+
+        Debug.Log("Finished Resetting World and opening filestream");
+
+        string line = sr.ReadLine();
+        SetDungeonName(line.Substring(line.IndexOf(": ") + 2)); // Get Current Dungeon Name
+        //Debug.Log(line);
+
+        line = sr.ReadLine();
+        SetNextDungeonName(line.Substring(line.IndexOf(": ") + 2)); // Get Next Dungeon Name
+        //Debug.Log("dim substring: " + dimension_substring);
+
+        line = sr.ReadLine();
+        string dimension_substring = line.Substring(line.IndexOf(": ") + 2); // Get Dungeon Dimention
+        string[] dimension = dimension_substring.Split(',');
+        int x_size = int.Parse(dimension[0], CultureInfo.InvariantCulture.NumberFormat);
+        int y_size = int.Parse(dimension[1], CultureInfo.InvariantCulture.NumberFormat);
+        Debug.Log("In LoadSaveManager, X: " + x_size + " Y: " + y_size);
+        SetDungeonDimension(x_size, y_size);
+        PrepareWorld();
+
+        for (int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] asset_line = line.Split(' ');
+            int line_index = 0;
+            for (int x = 0; x < x_size; x++)
+            {
+                if (asset_line[line_index] != "--") LoadEnvironment(asset_line[line_index], (x, y));
+                line_index++;
+            }
+        }
+
+        line = sr.ReadLine();
+        if (line != "end-dungeon") Debug.LogError("Load Level Over-Read dungeon layout in file: " + filename + ".txt");
+
+        line = sr.ReadLine();
+        List<EnemyData> enemy_construct = new List<EnemyData>();
+        for (int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] enemy_line = line.Split(' ');
+            int line_index = 0;
+            for (int x = 0; x < x_size; x++)
+            {
+                if (enemy_line[line_index] != "--") enemy_construct.Add(new EnemyData(enemy_line[line_index], x, y));
+                line_index++;
+            }
+        }
+        line = sr.ReadLine();
+        line = sr.ReadLine();
+        if (line != "EnemiesStatistics") Debug.Log("Load Level Over-Read enemy layout in file: " + filename + ".txt");
+        Debug.Log("Line is: " + line);
+
+        while (line != "end-enemy")
+        {
+            line = sr.ReadLine();
+            string[] enemy_line = line.Split(',');
+            for (int i = 0; i < enemy_construct.Count; i++)
+            {
+                if (enemy_construct[i].enemy_ID == enemy_line[0])
+                {
+                    string elemontal_key = enemy_line[1];
+                    float tmp_cur_hp = float.Parse(enemy_line[2], CultureInfo.InvariantCulture.NumberFormat);
+                    float tmp_max_hp = float.Parse(enemy_line[3], CultureInfo.InvariantCulture.NumberFormat);
+                    string m1 = enemy_line[4];
+                    string m2 = enemy_line[5];
+                    string m3 = enemy_line[6];
+                    string m4 = enemy_line[7];
+                    LoadEnemies(elemontal_key, enemy_construct[i].x, enemy_construct[i].y, tmp_cur_hp, tmp_max_hp, m1, m2, m3, m4);
+                }
+            }
+        }
+        SetLoadStatusReady();
+    }
+
+
+    private void InterimLevelSave()
+    {
+        string filename = "interimsaveslot";
+
+        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\SaveData\" + filename + ".txt";
+        using FileStream fs = File.Create(path);
+        using var sr = new StreamWriter(fs);
+
+        sr.WriteLine(filename);
+
+        //Save Dungeon Name:
+        sr.WriteLine("DungeonName: " + GetNextDungeonName());
+        //Save Item List (TODO: once items have been implemented)
+
+        //Save PlayerStats
+        sr.WriteLine("PlayerStatistics:");
+        PlayerMovement player = GetPlayer().GetComponent<PlayerMovement>();
+
+        string player_stats = "";
+        string player_name = player.gameObject.name.Substring(0, player.gameObject.name.IndexOf("|"));
+        player_stats += player_name; //ElemontalName
+        player_stats += ",-1,-1";
+        player_stats += "," + player.GetCurrentHealth() + "," + player.GetMaxHealth();
+        player_stats += "," + player.GetCurrentEnergy() + "," + player.GetMaxEnergy();
+        sr.WriteLine(player_stats);
+
+        sr.WriteLine("PlayerMoveset:");
+
+        string playermove = "";
+        bool first = true;
+        foreach (Moveset m in player.GetMoveSet())
+        {
+            if (first)
+            {
+                playermove += m.GetMoveName();
+                first = false;
+            }
+            else
+            {
+                playermove += "," + m.GetMoveName();
+            }
+        }
+
+        sr.WriteLine(playermove);
     }
 }

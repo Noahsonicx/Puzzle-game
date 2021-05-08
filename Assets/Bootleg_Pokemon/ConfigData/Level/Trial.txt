@@ -2,19 +2,19 @@ Dungeon Name: Trial
 Next Dungeon Name: Trial2
 Dungeon Size: 7,7
 w0 w0 w0 w0 w0 w0 w0
-w0 -- -- -- -- w0 w0
-w0 -- -- w0 -- w0 w0
-w0 -- -- -- -- w0 w0
-w0 -- -- -- -- -- w0
-w0 -- w0 -- -- w0 w0
+w0 g0 g0 g0 g0 w0 w0
+w0 g0 g0 w0 g0 w0 w0
+w0 g0 g0 g0 g0 w0 w0
+w0 g0 g0 g0 g0 s0 w0
+w0 n0 w0 g0 g0 w0 w0
 w0 w0 w0 w0 w0 w0 w0
 end-dungeon
 Enemies on Level
 -- -- -- -- -- -- -- 
--- e1 -- -- -- -- -- 
+-- e1 e2 -- -- -- -- 
 -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- 
--- -- -- e2 -- -- -- 
+-- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- 
 end-enemy-loc

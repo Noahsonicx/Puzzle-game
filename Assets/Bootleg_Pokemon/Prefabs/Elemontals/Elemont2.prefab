@@ -12,12 +12,12 @@ GameObject:
   - component: {fileID: 8748224860556804537}
   - component: {fileID: 5701031085142681950}
   m_Layer: 0
-  m_Name: Text (TMP) (1)
+  m_Name: Energy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &4724923259290458260
 RectTransform:
   m_ObjectHideFlags: 0
@@ -206,8 +206,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1147871829
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: 2747690628134850419, guid: a9716c16a44a94eed9b5c90fbf4d9bdd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -308,6 +308,8 @@ MonoBehaviour:
   elemontal_name: Pidgey
   healthPoints: 15
   energyPoints: 15
+  listOfAllPossibleAbilities: []
+  startingAbilities: []
   health_text: {fileID: 4426444698029529144}
   energy_text: {fileID: 5701031085142681950}
 --- !u!1 &3620392574554437206
@@ -368,7 +370,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
-  m_SortingLayerID: 0
+  m_SortingLayerID: 141274975
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &4911465390070829542
@@ -423,7 +425,7 @@ GameObject:
   - component: {fileID: 6957563249534418361}
   - component: {fileID: 4426444698029529144}
   m_Layer: 0
-  m_Name: Text (TMP)
+  m_Name: Hp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

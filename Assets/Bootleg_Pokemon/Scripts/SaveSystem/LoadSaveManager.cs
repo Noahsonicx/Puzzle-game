@@ -64,10 +64,14 @@ public class LoadSaveManager : MonoBehaviour
             float enemy_y= float.Parse(enemy_stat[2], CultureInfo.InvariantCulture.NumberFormat);
             float enemy_cur_hp = float.Parse(enemy_stat[3], CultureInfo.InvariantCulture.NumberFormat);
             float enemy_max_hp = float.Parse(enemy_stat[4], CultureInfo.InvariantCulture.NumberFormat);
-            string m1 = enemy_stat[4];
-            string m2 = enemy_stat[5];
-            string m3 = enemy_stat[6];
-            string m4 = enemy_stat[7];
+            string m1 = enemy_stat[5];
+            print("In LoadFrom Save move1:" + m1);
+            string m2 = enemy_stat[6];
+            print("In LoadFrom Save move2:" + m2);
+            string m3 = enemy_stat[7];
+            print("In LoadFrom Save move3:" + m3);
+            string m4 = enemy_stat[8];
+            print("In LoadFrom Save move4:" + m4);
 
             Debug.Log("Enemy cur_hp:" + enemy_cur_hp + " max_hp: " + enemy_max_hp);
             //TODO: Make a spawn enemy in world manager

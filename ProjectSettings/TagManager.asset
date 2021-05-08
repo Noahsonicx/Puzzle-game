@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Enemy
   - Wall
+  - Ground
+  - Spawn
+  - NextLevelStair
   layers:
   - Default
   - TransparentFX
@@ -13,10 +16,10 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
+  - Environment
+  - Item
+  - Character
+  - HUD
   - 
   - 
   - 
@@ -42,4 +45,16 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Environment
+    uniqueID: 2778235239
+    locked: 0
+  - name: Item
+    uniqueID: 3986145917
+    locked: 0
+  - name: Character
+    uniqueID: 3147095467
+    locked: 0
+  - name: HUD
+    uniqueID: 141274975
     locked: 0
