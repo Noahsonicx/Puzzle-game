@@ -5,14 +5,21 @@ using TMPro;
 
 public class Elemontals : MonoBehaviour
 {
+    public struct abilities
+    {
+        int level {get;}
+        int abilityName {get;}
+    }
     [SerializeField]
-    protected string elemontal_name;
+    private string elemontal_name;
     [SerializeField]
-    protected float healthPoints;
+    private float healthPoints;
     [SerializeField]
     protected float energyPoints;
     [SerializeField]
-    protected Moveset[] listOfMoves;
+    public List<string> listOfAllPossibleAbilities;
+    [SerializeField]
+    public List<string> startingAbilities;
 
     public TextMeshProUGUI health_text;
     public TextMeshProUGUI energy_text;
@@ -32,5 +39,12 @@ public class Elemontals : MonoBehaviour
     public void ChangeText(string _text)
     {
         health_text.text = _text;
+    }
+    public string GetStartingMoves()
+    {
+        string moveLine = "";
+        moveLine += startingAbilities[0] + "," + startingAbilities[1] + "," + startingAbilities[2] + "," + startingAbilities[3];
+
+        return moveLine;
     }
 }

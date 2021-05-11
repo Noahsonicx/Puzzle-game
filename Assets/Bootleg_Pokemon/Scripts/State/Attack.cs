@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Attack : State 
 {
-    public GameObject target;
-    public Moveset move;
+    public GameObject target { get; set; }
+    public Moveset move { get; set; }
     public Attack(GameObject _target, Moveset _move)
     {
         this.state_name = "Attack";
