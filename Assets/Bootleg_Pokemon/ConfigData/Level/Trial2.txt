@@ -21,17 +21,19 @@ Enemies on Level
 -- -- -- -- -- -- -- --
 end-enemy-loc
 EnemiesStatistics
-e1,Elemont2,15,15,Blaze,Blaze,Blaze,Blaze
-e2,Elemont,15,15,Pound,Pound,Pound,Pound
-e3,Elemont,15,15,Pound,Pound,Pound,Pound
+e1,Kizerain,15,15,Blaze,Blaze,Blaze,Blaze
+e2,Aloidia,15,15,Pound,Pound,Pound,Pound
+e3,Naiad,15,15,Pound,Pound,Pound,Pound
 end-enemy
 Items on level
 -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
 -- -- -- i1 -- -- -- --
 -- -- -- -- -- -- -- --
 -- -- -- -- -- -- -- --
--- -- -- i1 -- -- -- --
 -- -- -- -- -- -- -- --
+-- -- -- i2 -- -- -- --
+-- -- -- -- -- -- -- --
+i1,HealthPotion
+i2,EnergyPotion
 end-item

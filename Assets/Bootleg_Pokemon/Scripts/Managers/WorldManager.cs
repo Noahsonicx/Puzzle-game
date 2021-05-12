@@ -21,18 +21,42 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    public struct EnvironmentContruct
+    public struct ItemData
+    {
+        public string item_Id;
+        public float x;
+        public float y;
+
+        public ItemData(string _id, float _x, float _y)
+        {
+            item_Id = _id;
+            x = _x;
+            y = _y;
+        }
+    }
+
+    public struct EnvironmentConstruct
     {
         public string asset_key;
         public (float, float) asset_loc;
 
-        public EnvironmentContruct(string _key, (float, float) _loc) {
+        public EnvironmentConstruct(string _key, (float, float) _loc) {
 
             asset_key = _key;
             asset_loc = _loc;
         }
     }
+    public struct ItemConstruct
+    {
+        public string item_name;
+        public (float, float) item_loc;
 
+        public ItemConstruct(string _itemName ,(float,float) _loc)
+        {
+            item_name = _itemName;
+            item_loc = _loc;
+        }
+    }
     public struct EnemyConstruct
     {
         public string elemontal_key;
@@ -67,7 +91,8 @@ public class WorldManager : MonoBehaviour
         public string move2;
         public string move3;
         public string move4;
-        public PlayerConstruct(string _key, float _x, float _y, float _cur_h, float _max_h, float _cur_e, float _max_e, string m1, string m2, string m3, string m4)
+        public List<(string, int)> inventoryRecord;
+        public PlayerConstruct(string _key, float _x, float _y, float _cur_h, float _max_h, float _cur_e, float _max_e, string m1, string m2, string m3, string m4, List<(string,int)> _inventoryRecord)
         {
             elemontal_key = _key;
             player_loc = (_x, _y);
@@ -79,6 +104,7 @@ public class WorldManager : MonoBehaviour
             move2 = m2;
             move3 = m3;
             move4 = m4;
+            inventoryRecord = _inventoryRecord;
         }
     }
     // World Settings and Contents
@@ -100,7 +126,8 @@ public class WorldManager : MonoBehaviour
     public bool playerDead = false;
 
     //Construct used to hold data when loading
-    public List<EnvironmentContruct> asset_construct = new List<EnvironmentContruct>();
+    public List<EnvironmentConstruct> asset_construct = new List<EnvironmentConstruct>();
+    public List<ItemConstruct> item_construct = new List<ItemConstruct>();
     public List<EnemyConstruct> enemy_construct = new List<EnemyConstruct>();
     public PlayerConstruct player_construct;
 
@@ -111,6 +138,7 @@ public class WorldManager : MonoBehaviour
     public GameObject environment_asset_manager;
     public GameObject elemontal_asset_manager;
     public GameObject moveset_manager;
+    public GameObject item_manager;
 
     // Turn Base System Variables
     private bool player_turn = true;
@@ -170,7 +198,8 @@ public class WorldManager : MonoBehaviour
             {
                 if (!environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetDictionaryReadyStatus()
                     || !moveset_manager.GetComponent<MoveSetDictionary>().GetDictionaryReadyStatus()
-                    || !elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetDictionaryReadyStatus())
+                    || !elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetDictionaryReadyStatus()
+                    || !item_manager.GetComponent<ItemDictionary>().GetDictionaryReadyStatus())
                 {
                     Debug.Log("Still Loading Dictionaries");
                 }
@@ -198,6 +227,10 @@ public class WorldManager : MonoBehaviour
                     // Add Enemies into the world
                     SpawnEnemy();
                     //Debug.Log("Finished Loading Enemy");
+                    // Step 4:
+                    // Add item to the world
+                    SpawnItem();
+                    
                     level_loaded = true; // Level finished loading. Start Turn System after this.
                                          //Debug.Log("Finished Loading Level");
                 }
@@ -215,19 +248,18 @@ public class WorldManager : MonoBehaviour
         
         try
         {
-            foreach (EnvironmentContruct ec in asset_construct)
+            foreach (EnvironmentConstruct ec in asset_construct)
             {
                 GameObject prefab = environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetAsset(ec.asset_key);
                 if (prefab == null)
                 {
                     throw (new AssetNotInDictionaryException("No Asset called:"+ ec.asset_key + "in Dictionary"));
                 }
-
-                //TODO:
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ec.asset_loc.Item1, spawn_location.y + ec.asset_loc.Item2);
                 if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2] == null) Debug.LogError("WorldArray is Empty for this slot" + (int)ec.asset_loc.Item1 + "/" + (int)ec.asset_loc.Item2);
                 if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment == null) Debug.LogError("Environment field of WorldElement is empty");
-                    world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                
+                world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
                 Debug.Log("Spawning wall at location: " + ec.asset_loc.Item1 + "/" + ec.asset_loc.Item2);
                 if (ec.asset_key.Contains("w")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
                 else if (ec.asset_key.Contains("g")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Ground";
@@ -250,6 +282,35 @@ public class WorldManager : MonoBehaviour
             Debug.LogError(e.Message);
         }
        
+    }
+
+    public void SpawnItem()
+    {
+        try
+        {
+            Debug.Log("Item Construct has: '" + item_construct.Count + "' elements");
+            foreach (ItemConstruct ic in item_construct)
+            {
+                GameObject prefab = item_manager.GetComponent<ItemDictionary>().GetItem(ic.item_name);
+                if (prefab == null)
+                {
+                    throw (new AssetNotInDictionaryException("No Asset called:" + ic.item_name + " in ItemDictionary"));
+                }
+                Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ic.item_loc.Item1, spawn_location.y + ic.item_loc.Item2);
+                if (world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2] == null) Debug.LogError("WorldArray is Empty for this slot" + (int)ic.item_loc.Item1 + "/" + (int)ic.item_loc.Item2);
+                if (world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item == null) Debug.LogError("item field of WorldElement is empty");
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.gameObject.layer = 7;
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.gameObject.tag = "Item";
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.GetComponent<SpriteRenderer>().sortingLayerName = "Item";
+
+
+            }
+        }
+        catch (AssetNotInDictionaryException e)
+        {
+            Debug.LogError(e.Message);
+        }
     }
     private void SpawnPlayer()
     {
@@ -282,6 +343,13 @@ public class WorldManager : MonoBehaviour
         player.gameObject.layer = 8;
         player.GetComponent<SpriteRenderer>().sortingLayerName = "Character";
         player.GetComponentInChildren<Canvas>().sortingLayerName = "HUD";
+        player.AddComponent<InventorySystem>();
+        player.GetComponent<InventorySystem>().PrepareInventory();
+        Debug.Log("inventory count: " + player_construct.inventoryRecord.Count);
+        if(player_construct.inventoryRecord.Count != 0)
+        {
+            player.GetComponent<InventorySystem>().LoadInventory(player_construct.inventoryRecord);
+        }
         UpdateCameraLocation(player_loc);
     }
     private void SpawnEnemy()
@@ -558,6 +626,14 @@ public class WorldManager : MonoBehaviour
                                 InterimLevelSave();
                                 LoadNextLevel();
                             }
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject.tag.Contains("Item"))
+                            {
+                                // Player is stepping on an item. Automatically pick it up
+                                player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<SpriteRenderer>().enabled = false;
+                                //Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
+                            }
                             //Debug.Log("Moving Player Up");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
@@ -594,6 +670,13 @@ public class WorldManager : MonoBehaviour
                                 InterimLevelSave();
                                 LoadNextLevel();
                             }
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject.tag.Contains("Item"))
+                            {
+                                // Player is stepping on an item. Automatically pick it up
+                                player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
+                            }
                             Debug.Log("Moving Player Down");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
@@ -625,6 +708,13 @@ public class WorldManager : MonoBehaviour
                                 InterimLevelSave();
                                 LoadNextLevel();
                             }
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject.tag.Contains("Item"))
+                            {
+                                // Player is stepping on an item. Automatically pick it up
+                                player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
+                            }
                             Debug.Log("Moving Player Left");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
@@ -654,6 +744,13 @@ public class WorldManager : MonoBehaviour
                                 // Player reached the stair for the next level
                                 InterimLevelSave();
                                 LoadNextLevel();
+                            }
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject.tag.Contains("Item"))
+                            {
+                                // Player is stepping on an item. Automatically pick it up
+                                player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
                             Debug.Log("Moving Player Right");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
@@ -772,16 +869,21 @@ public class WorldManager : MonoBehaviour
     }
     public void LoadEnvironment(string _key, (float, float) _loc)
     {
-        asset_construct.Add(new EnvironmentContruct(_key, _loc));        
+        asset_construct.Add(new EnvironmentConstruct(_key, _loc));        
+    }
+
+    public void LoadItem(string item_name,(float,float) _loc)
+    {
+        item_construct.Add(new ItemConstruct(item_name, _loc));
     }
     public void LoadEnemies(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, string m1, string m2, string m3, string m4)
     {
         enemy_construct.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, m1, m2 , m3, m4));
     }
  
-    public void LoadPlayer(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, float _cur_energy, float _max_energy,string m1, string m2, string m3, string m4)
+    public void LoadPlayer(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, float _cur_energy, float _max_energy,string m1, string m2, string m3, string m4, List<(string,int)> _itemRecord)
     {
-        player_construct = new PlayerConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, _cur_energy, _max_energy, m1, m2, m3, m4);
+        player_construct = new PlayerConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, _cur_energy, _max_energy, m1, m2, m3, m4, _itemRecord);
     }
 
     public void PrepareWorld()
@@ -829,6 +931,7 @@ public class WorldManager : MonoBehaviour
         enemy_list.Clear();
         enemy_construct.Clear();
         asset_construct.Clear();
+        item_construct.Clear();
         playerDead = false;
         PrepareWorld();
     }
@@ -1094,7 +1197,24 @@ public class WorldManager : MonoBehaviour
         string move3 = player_moves[2];
         string move4 = player_moves[3];
 
-        LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4);
+        List<(string, int)> inventoryRecord = new List<(string, int)>();
+        saveLine = srInterim.ReadLine();
+        if (saveLine != "PlayerInventory") Debug.LogError("Wrong read in interim save file in LoadNextLevel in WorldManager.cs");
+        saveLine = srInterim.ReadLine();
+        while (saveLine != "end-inventory")
+        {
+            while (saveLine != "end-type" && saveLine != "end-inventory" && !saveLine.Contains("type"))
+            {
+                string[] itemDeets = saveLine.Split(',');
+                string itemName = itemDeets[0];
+                int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
+                inventoryRecord.Add((itemName, itemQuantity));
+                saveLine = srInterim.ReadLine();
+            }
+            saveLine = srInterim.ReadLine();
+        }
+
+        LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4, inventoryRecord);
 
         fsInterim.Close();
         srInterim.Close();
@@ -1177,6 +1297,35 @@ public class WorldManager : MonoBehaviour
                 }
             }
         }
+        line = sr.ReadLine();
+        // TODO: Fix reading item in dungeon
+        List<ItemData> item_construct = new List<ItemData>();
+        for (int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] item_line = line.Split(' ');
+            for (int x = 0; x < x_size; x++)
+            {
+                if (item_line[x] != "--") item_construct.Add(new ItemData(item_line[x], x, y));
+            }
+        }
+
+        while(line != "end-item")
+        {
+            line = sr.ReadLine();
+            string[] item_line = line.Split(',');
+            for (int i = 0; i < item_construct.Count; i++)
+            {
+                if(item_construct[i].item_Id == item_line[0])
+                {
+                    string itemID = item_line[0];
+                    string itemName = item_line[1];
+                    LoadItem(itemName, (item_construct[i].x,item_construct[i].y));
+                }
+            }
+        }
+
         SetLoadStatusReady();
     }
 
@@ -1225,5 +1374,22 @@ public class WorldManager : MonoBehaviour
         }
 
         sr.WriteLine(playermove);
+
+        sr.WriteLine("PlayerInventory");
+        var inventory = player.GetComponent<InventorySystem>().GetInventory();
+
+        for (int i = 0; i < inventory.Count; i++)
+        {
+            sr.WriteLine("Item type: " + inventory[i].Item1);
+            for (int z = 0; z < inventory[i].Item2.Count; z++)
+            {
+                sr.WriteLine(inventory[i].Item2[z].GetItem().GetItemName() + "," + inventory[i].Item2[z].GetQuantity());
+            }
+            sr.WriteLine("end-type");
+        }
+
+        sr.WriteLine("end-inventory");
+        sr.Close();
+        fs.Close();
     }
 }

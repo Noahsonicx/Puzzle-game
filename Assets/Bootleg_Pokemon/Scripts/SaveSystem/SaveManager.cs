@@ -90,6 +90,17 @@ public class SaveManager : MonoBehaviour
         sr.WriteLine(playermove);
 
         // Save Player Inventory (TODO: Once player inventory has been implemented)
+
+        var inventory = player.GetComponent<InventorySystem>().GetInventory();
+
+        for(int i = 0; i < inventory.Count; i++)
+        {
+            sr.WriteLine("Item type:" + inventory[i].Item1);
+            for(int z = 0; z < inventory[i].Item2.Count;z++)
+            {
+                sr.WriteLine(inventory[i].Item2[z].GetItem().GetItemName() + "," + inventory[i].Item2[z].GetQuantity());
+            }
+        }
     }
 
     public void SaveStartFile(string element)
@@ -117,10 +128,9 @@ public class SaveManager : MonoBehaviour
         using var sr = new StreamWriter(fs);
 
         sr.WriteLine(filename);
-
         Elemontals elemontalPicked = elemontalDictionary.GetAsset(elemontalName).GetComponent<Elemontals>();
         //Save Dungeon Name:
-        sr.WriteLine("DungeonName =  Trial.txt"); // Change here if starting dungeon is different
+        sr.WriteLine("DungeonName: Trial"); // Change here if starting dungeon is different
 
         //Save PlayerStats
         sr.WriteLine("PlayerStatistics:");
@@ -142,5 +152,8 @@ public class SaveManager : MonoBehaviour
         sr.WriteLine(playermove);
 
         // Save Player Inventory (TODO: Once player inventory has been implemented)
+
+        sr.WriteLine("PlayerInventory");
+        sr.WriteLine("end-inventory");
     }
 }

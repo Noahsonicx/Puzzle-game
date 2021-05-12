@@ -42,6 +42,7 @@ public class Elemontals : MonoBehaviour
     }
     public string GetStartingMoves()
     {
+
         string moveLine = "";
         moveLine += startingAbilities[0] + "," + startingAbilities[1] + "," + startingAbilities[2] + "," + startingAbilities[3];
 

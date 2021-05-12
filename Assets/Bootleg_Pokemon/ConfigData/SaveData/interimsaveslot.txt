@@ -1,6 +1,11 @@
 interimsaveslot
 DungeonName: Trial2
 PlayerStatistics:
-Elemont,-1,-1,20,20,8,8
+Kizerain,-1,-1,20,20,8,8
 PlayerMoveset:
-Blaze,Pound,Bless,Fire Dance
+Blaze,Blaze,Blaze,Blaze
+PlayerInventory
+Item type: Consumable
+HealthPotion,1
+end-type
+end-inventory

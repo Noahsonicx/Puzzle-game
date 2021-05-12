@@ -122,7 +122,7 @@ public class CharacterSelectorManager : MonoBehaviour
         QnA q4 = new QnA("What colour do you feel the most affinity with:",
                          "Blue - Water",
                          "Red - Fire");
-        questionList.Add("Water,Fire", q4);
+        questionList.Add("Fire,Water", q4);
 
         QnA q5 = new QnA("What colour do you feel the most affinity with:",
                          "Green - Earth",

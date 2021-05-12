@@ -2,17 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Item
+[System.Serializable]
+public class Item 
 {
-    private string name;
-    private string type;
+    [SerializeField]
+    protected string itemName;
+    [SerializeField]
+    protected string type;
 
     public string GetItemName()
     {
-        return name;
+        return itemName;
     }
+
     public string GetItemType()
     {
         return type;
     }
+    
 }

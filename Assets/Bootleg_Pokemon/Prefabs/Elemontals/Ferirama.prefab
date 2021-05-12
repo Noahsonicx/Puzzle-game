@@ -249,7 +249,7 @@ GameObject:
   - component: {fileID: 1284466929518256479}
   - component: {fileID: 2584689292268518701}
   m_Layer: 0
-  m_Name: Elemont
+  m_Name: Ferirama
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -374,7 +374,11 @@ MonoBehaviour:
   healthPoints: 20
   energyPoints: 8
   listOfAllPossibleAbilities: []
-  startingAbilities: []
+  startingAbilities:
+  - Blaze
+  - Pound
+  - Blaze
+  - Pound
   health_text: {fileID: 2084760463802698842}
   energy_text: {fileID: 2369946293123344511}
 --- !u!1 &7630819952386203736

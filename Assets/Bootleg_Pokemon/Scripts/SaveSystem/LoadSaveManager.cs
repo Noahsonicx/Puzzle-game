@@ -8,7 +8,21 @@ using TMPro;
 
 
 public class LoadSaveManager : MonoBehaviour
-{    
+{
+    public struct ItemData
+    {
+        public string item_Id;
+        public float x;
+        public float y;
+
+        public ItemData(string _id, float _x, float _y)
+        {
+            item_Id = _id;
+            x = _x;
+            y = _y;
+        }
+    }
+
     public struct EnemyData
     {
         public string enemy_ID;
@@ -144,7 +158,35 @@ public class LoadSaveManager : MonoBehaviour
         string move3 = player_moves[2];
         string move4 = player_moves[3];
 
-        wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4);
+        List<(string, int)> inventoryRecord = new List<(string, int)>();
+        line = sr.ReadLine();
+        if (line != "PlayerInventory") Debug.LogError("Wrong read in interim save file in LoadNextLevel in WorldManager.cs");
+        while (line != "end-inventory")
+        {
+            sr.ReadLine();
+            while (line != "end-type")
+            {
+                line = sr.ReadLine();
+                string[] itemDeets = line.Split(',');
+                string itemName = itemDeets[0];
+                int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
+                inventoryRecord.Add((itemName, itemQuantity));
+            }
+        }
+
+        wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4, inventoryRecord);
+
+        line = sr.ReadLine();
+        if (line != "Item on Level") Debug.LogError("Text Differs for: " + line);
+        while (line != "end-item")
+        {
+            line = sr.ReadLine();
+            string[] item_details = line.Split(',');
+            string itemName = item_details[0];
+            float item_x = float.Parse(item_details[1], CultureInfo.InvariantCulture.NumberFormat);
+            float item_y = float.Parse(item_details[2], CultureInfo.InvariantCulture.NumberFormat);
+            wm.LoadItem(itemName, (item_x, item_y));
+        }
 
         wm.SetLoadStatusReady();
         return true;
@@ -231,7 +273,35 @@ public class LoadSaveManager : MonoBehaviour
                 }
             }
         }
-        // TODO: Item Construct depending on how inventory is implemented.
+        
+        List<ItemData> item_construct = new List<ItemData>();
+        for (int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] item_line = line.Split(' ');
+            int line_index = 0;
+            for (int x = 0; x < x_size; x++)
+            {
+                if (item_line[line_index] != "--") item_construct.Add(new ItemData(item_line[line_index], x, y));
+                line_index++;
+            }
+        }
+
+        while (line != "end-item")
+        {
+            line = sr.ReadLine();
+            string[] item_line = line.Split(',');
+            for (int i = 0; i < item_construct.Count; i++)
+            {
+                if (item_construct[i].item_Id == item_line[0])
+                {
+                    string itemID = item_line[0];
+                    string itemName = item_line[1];
+                    wm.LoadItem(itemName, (item_construct[i].x, item_construct[i].y));
+                }
+            }
+        }
         wm.SetLoadStatusReady();
     }
     public void StartGame()
@@ -271,8 +341,25 @@ public class LoadSaveManager : MonoBehaviour
         string move3 = player_moves[2];
         string move4 = player_moves[3];
 
-        wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4);
+        List<(string, int)> inventoryRecord = new List<(string, int)>();
+        saveLine = sr.ReadLine();
+        if (saveLine != "PlayerInventory") Debug.LogError("Wrong read in interim save file in LoadStartLevel in WorldManager.cs");
+        saveLine = sr.ReadLine();
+        while (saveLine != "end-inventory")
+        {
+            
+            while (saveLine != "end-type" && saveLine != "end-inventory")
+            {
+                string[] itemDeets = saveLine.Split(',');
+                string itemName = itemDeets[0];
+                int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
+                inventoryRecord.Add((itemName, itemQuantity));
+                saveLine = sr.ReadLine();
+            }
+            saveLine = sr.ReadLine();
+        }
 
+        wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4, inventoryRecord);
         fs.Close();
         sr.Close();
 
@@ -350,7 +437,41 @@ public class LoadSaveManager : MonoBehaviour
                 }
             }
         }
-        // TODO: Item Construct depending on how inventory is implemented.
+        line = sr_dungeon.ReadLine();
+
+        List<ItemData> item_construct = new List<ItemData>();
+        for (int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr_dungeon.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] item_line = line.Split(' ');
+            for (int x = 0; x < x_size; x++)
+            {
+                if (item_line[x] != "--")
+                {
+                    item_construct.Add(new ItemData(item_line[x], x, y));
+                    Debug.Log("When item_line: " + item_line[x] + "x/y: " + x + "/" + y);
+                }
+            }
+        }
+
+        while (line != "end-item")
+        {
+            line = sr_dungeon.ReadLine();
+            Debug.Log("Line after for is: " + line);
+            string[] item_line = line.Split(',');
+            for (int i = 0; i < item_construct.Count; i++)
+            {
+                Debug.Log("itemId in itemconstruct / in itemLine[0]" + item_construct[i] + " / " + item_line[0]);
+                if (item_construct[i].item_Id == item_line[0])
+                {
+                    string itemID = item_line[0];
+                    string itemName = item_line[1];
+                    wm.LoadItem(itemName, (item_construct[i].x, item_construct[i].y));
+                }
+            }
+        }
+
         wm.SetLoadStatusReady();
 
     }

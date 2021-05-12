@@ -8,3 +8,6 @@ PlayerStatistics:
 Elemont2,4,3,10,20,8,8
 PlayerMoveset:
 Blaze,Pound,Bless,Fire Dance
+Item on Level
+HealthPotion,2,2
+end-item

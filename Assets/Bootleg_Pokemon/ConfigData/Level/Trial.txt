@@ -11,7 +11,7 @@ w0 w0 w0 w0 w0 w0 w0
 end-dungeon
 Enemies on Level
 -- -- -- -- -- -- -- 
--- e1 e2 -- -- -- -- 
+-- e1 -- -- e2 -- -- 
 -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- 
 -- -- -- -- -- -- -- 
@@ -19,16 +19,16 @@ Enemies on Level
 -- -- -- -- -- -- -- 
 end-enemy-loc
 EnemiesStatatistics
-e1,Elemont2,15,15,Blaze,Blaze,Blaze,Blaze
-e2,Elemont,15,15,Pound,Pound,Pound,Pound
+e1,Ferirama,15,15,Blaze,Blaze,Blaze,Blaze
+e2,Naiad,15,15,Water Whip,Water Whip,Water Whip,Ice Shot
 end-enemy
 Items on level
--- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
--- -- -- i1 -- -- -- --
--- -- -- -- -- -- -- --
--- -- -- -- -- -- -- --
--- -- -- i1 -- -- -- --
--- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- i1 -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+i1,HealthPotion
 end-item
