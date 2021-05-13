@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class InventorySystem : MonoBehaviour
 {
-    public struct ItemElement
+    [System.Serializable]
+    public class ItemElement
     {
-        Item item;
-        int quantity;
+        public Item item;
+        public int quantity;
         public ItemElement(Item _item)
         {
             item = _item;
@@ -28,7 +29,9 @@ public class InventorySystem : MonoBehaviour
         }
         public void AddItemQuantity(int _q) 
         {
+            Debug.Log("quantity before is: " + quantity);
             quantity += _q;
+            Debug.Log("quantity after is: " + quantity);
         }
     }
 
@@ -39,16 +42,16 @@ public class InventorySystem : MonoBehaviour
     // string is the type of item whether it be a consumable or key item and is to categorise the list of item element it is the key of
     private List<(string, List<ItemElement>)> Inventory = new List<(string, List<ItemElement>)>();
 
-    public List<Item> inventoryInspector = new List<Item>();
+    public List<ItemElement> inventoryInspector = new List<ItemElement>();
 
     public void DebugInventoryContent()
     {
         foreach(var itemType in Inventory)
         {
-            Debug.Log("Itemtype: " + itemType.Item1);
+            Debug.Log("DebugInventoryContent -Item type: " + itemType.Item1);
             foreach(var item in itemType.Item2)
             {
-                Debug.Log("Item name: " + item.GetItem().GetItemName() + " Item Quantity: " + item.GetQuantity().ToString());
+                Debug.Log("DebugInventoryContent -Item name: " + item.GetItem().GetItemName() + " Item Quantity: " + item.GetQuantity().ToString());
 
             }
         }
@@ -68,7 +71,7 @@ public class InventorySystem : MonoBehaviour
     
     public void UseItem(string name)
     {
-
+  
     } 
 
     public void PrepareInventory()
@@ -80,7 +83,11 @@ public class InventorySystem : MonoBehaviour
     {
         foreach((string,int) it in _inventoryRecord) {
             Item tmp = itemGuide.GetItemDetail(it.Item1);
-            AddMultipleToInventory(tmp, it.Item2);
+            for(int i = 0; i < it.Item2; i++)
+            {
+                AddToInventory(tmp);
+            }
+            //AddMultipleToInventory(tmp, it.Item2);
         }
     }
 
@@ -90,29 +97,50 @@ public class InventorySystem : MonoBehaviour
 
         foreach ((string, List<ItemElement>) t in Inventory)
         {
-            Debug.Log("Item type in inventory is: " + t.Item1);
-            Debug.Log("Item type passed in is: " + item.GetItemType());
+            //Debug.Log("DebugInventory - Item type in inventory is: " + t.Item1);
+            //Debug.Log("DebugInventory - Item type passed in is: " + item.GetItemType());
             if (t.Item1 == item.GetItemType())
             {
-                Debug.Log("Found same type");
+                //Debug.Log("DebugInventory - Found same type");
                 itemtype_exist = true;
                 bool item_exist = false;
                 foreach (ItemElement z in t.Item2)
                 {
 
-                    Debug.Log("item name: " + z.GetItem().GetItemName());
-                    Debug.Log("item name passed in: " + item.GetItemName());
+                    //Debug.Log("DebugInventory - item name: " + z.GetItem().GetItemName());
+                    //Debug.Log("DebugInventory - item name passed in: " + item.GetItemName());
                     if (z.GetItem().GetItemName() == item.GetItemName())
                     {
-                        Debug.Log("Found same item");
+                        //Debug.Log("DebugInventory - Found same item");
                         z.AddItemQuantity(1);
+                        //Debug.Log("DebugInventory - in Z, Item name: " + z.GetItem().GetItemName() + " Quantity: " + z.GetQuantity());
+                        //DebugInventoryContent();
+                        Debug.Log(z.GetQuantity());
+                        item_exist = true;
+                        foreach(var inventoryInspectorelem in inventoryInspector)
+                        {
+                            if (inventoryInspectorelem.GetItem().GetItemName() == z.GetItem().GetItemName())
+                            {
+                                inventoryInspectorelem.AddItemQuantity(1);
+                                Debug.Log(inventoryInspectorelem.GetQuantity());
+/*
+ * #if UNITY_EDITOR
+                                UnityEditor.EditorApplication.isPaused = true;
+#endif
+*/
+                            }
+                                    
+                        }
+                        return;
                     }
                 }
 
                 if (!item_exist)
                 {
-                    Debug.Log("Item picked up does not exist");
+                    //Debug.Log("DebugInventory - Item picked up does not exist");
                     t.Item2.Add(new ItemElement(item));
+                    inventoryInspector.Add(new ItemElement(item, 1));
+                    return;
                 }
             }
         }
@@ -122,42 +150,9 @@ public class InventorySystem : MonoBehaviour
             List<ItemElement> tmp = new List<ItemElement>();
             tmp.Add(new ItemElement(item));
             Inventory.Add((item.GetItemType(), tmp));
+            inventoryInspector.Add(new ItemElement(item, 1));
         }
 
-        inventoryInspector.Add(item);
-    }
-    public void AddMultipleToInventory(Item item, int _quantity)
-    {
-        bool itemtype_exist = false;
-        foreach ((string, List<ItemElement>) t in Inventory)
-        {
-            if (t.Item1.Equals(item.GetType()))
-            {
-                itemtype_exist = true;
-                bool item_exist = false;
-                foreach (ItemElement z in t.Item2)
-                {
-                    if (z.GetItem().GetItemName() == item.GetItemName())
-                    {
-                        z.AddItemQuantity(_quantity);
-                    }
-                }
-
-                if (!item_exist)
-                {
-                    t.Item2.Add(new ItemElement(item, _quantity));
-                }
-            }
-        }
-
-        if (!itemtype_exist)
-        {
-            List<ItemElement> tmp = new List<ItemElement>();
-            tmp.Add(new ItemElement(item));
-
-            Inventory.Add((item.GetItemType(), tmp));
-        }
-
-        inventoryInspector.Add(item);
+       
     }
 }

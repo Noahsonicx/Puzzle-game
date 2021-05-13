@@ -360,6 +360,7 @@ public class WorldManager : MonoBehaviour
         {
             player.GetComponent<InventorySystem>().LoadInventory(player_construct.inventoryRecord);
         }
+        player.GetComponent<InventorySystem>().DebugInventoryContent();
         UpdateCameraLocation(player_loc);
     }
     private void SpawnEnemy()
@@ -425,11 +426,13 @@ public class WorldManager : MonoBehaviour
                 {
                     if(!inventoryPanel.activeSelf)
                     {
+                        DebugInventoryContent();
                         ReadyInventoryButtons();
                         inventoryPanel.SetActive(true);
                     }
                     else
                     {
+                        ResetInventoryButtons();
                         inventoryPanel.SetActive(false);
                     }
                 }
@@ -486,14 +489,22 @@ public class WorldManager : MonoBehaviour
         
     }
 
+    public void DebugInventoryContent()
+    {
+        foreach (var itemType in player.GetComponent<InventorySystem>().GetInventory())
+        {
+            Debug.Log("DebugInventoryWorldManager-Item type: " + itemType.Item1);
+            foreach (var item in itemType.Item2)
+            {
+                Debug.Log("DebugInventoryWorldManager-Item name: " + item.GetItem().GetItemName() + " Item Quantity: " + item.GetQuantity().ToString());
+
+            }
+        }
+    }
+                
     public void ReadyInventoryButtons()
     {
         var playerInventory = player.GetComponent<InventorySystem>().GetInventory();
-
-        player.GetComponent<InventorySystem>().DebugInventoryContent();
-
-        ResetInventoryButtons();
-
 
         GameObject scrollViewContent = null;
 
@@ -533,7 +544,7 @@ public class WorldManager : MonoBehaviour
                     foreach (TextMeshProUGUI txt in itemBtn.GetComponentsInChildren<TextMeshProUGUI>())
                     {
                         if (txt.name == "Name") txt.text = item.GetItem().GetItemName();
-                        if (txt.name == "Quantity") txt.text = item.GetQuantity().ToString();
+                        if (txt.name == "Quantity") txt.text = "x"+item.GetQuantity().ToString();
                     }
                 }
             }
@@ -1300,18 +1311,30 @@ public class WorldManager : MonoBehaviour
         List<(string, int)> inventoryRecord = new List<(string, int)>();
         saveLine = srInterim.ReadLine();
         if (saveLine != "PlayerInventory") Debug.LogError("Wrong read in interim save file in LoadNextLevel in WorldManager.cs");
-        saveLine = srInterim.ReadLine();
+        //saveLine = srInterim.ReadLine();
         while (saveLine != "end-inventory")
         {
-            while (saveLine != "end-type" && saveLine != "end-inventory" && !saveLine.Contains("type"))
+            saveLine = srInterim.ReadLine();
+            
+            if(saveLine.Contains("Item type"))
             {
-                string[] itemDeets = saveLine.Split(',');
-                string itemName = itemDeets[0];
-                int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
-                inventoryRecord.Add((itemName, itemQuantity));
                 saveLine = srInterim.ReadLine();
+
+                while (saveLine != "end-type")
+                {
+                    string[] itemDeets = saveLine.Split(',');
+                    string itemName = itemDeets[0];
+                    int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
+                    inventoryRecord.Add((itemName, itemQuantity));
+                    saveLine = srInterim.ReadLine();
+                }
             }
             saveLine = srInterim.ReadLine();
+        }
+
+        foreach(var i in inventoryRecord)
+        {
+            Debug.Log("Item name: " + i.Item1 + " item quantity: " + i.Item2);
         }
 
         LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4, inventoryRecord);
@@ -1399,6 +1422,7 @@ public class WorldManager : MonoBehaviour
         }
         line = sr.ReadLine();
         // TODO: Fix reading item in dungeon
+
         List<ItemData> item_construct = new List<ItemData>();
         for (int y = y_size - 1; y >= 0; y--)
         {
@@ -1478,12 +1502,15 @@ public class WorldManager : MonoBehaviour
         sr.WriteLine("PlayerInventory");
         var inventory = player.GetComponent<InventorySystem>().GetInventory();
 
-        for (int i = 0; i < inventory.Count; i++)
+        //player.GetComponent<InventorySystem>().DebugInventoryContent();
+
+        foreach(var itemType in inventory)
         {
-            sr.WriteLine("Item type: " + inventory[i].Item1);
-            for (int z = 0; z < inventory[i].Item2.Count; z++)
+            sr.WriteLine("Item type: " + itemType.Item1);
+            foreach(var item in itemType.Item2)
             {
-                sr.WriteLine(inventory[i].Item2[z].GetItem().GetItemName() + "," + inventory[i].Item2[z].GetQuantity());
+                sr.WriteLine(item.GetItem().GetItemName()+ "," + item.GetQuantity());
+
             }
             sr.WriteLine("end-type");
         }

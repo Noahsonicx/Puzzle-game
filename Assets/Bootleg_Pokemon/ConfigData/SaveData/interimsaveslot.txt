@@ -6,6 +6,7 @@ PlayerMoveset:
 Blaze,Blaze,Blaze,Blaze
 PlayerInventory
 Item type: Consumable
+EnergyPotion,1
 HealthPotion,1
 end-type
 end-inventory

@@ -93,6 +93,8 @@ public class SaveManager : MonoBehaviour
 
         var inventory = player.GetComponent<InventorySystem>().GetInventory();
 
+        //player.GetComponent<InventorySystem>().DebugInventoryContent();
+
         for(int i = 0; i < inventory.Count; i++)
         {
             sr.WriteLine("Item type:" + inventory[i].Item1);
