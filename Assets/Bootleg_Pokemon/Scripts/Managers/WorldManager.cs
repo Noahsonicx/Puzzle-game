@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class WorldManager : MonoBehaviour
@@ -176,6 +177,12 @@ public class WorldManager : MonoBehaviour
     public GameObject target_e7;
     public GameObject target_e8;
 
+    // UI for player's inventory
+
+    public GameObject inventoryPanel;
+    public GameObject inventoryButtonPrefab;
+    public TextMeshProUGUI emptyInventoryText;
+       
     // Camera 
     public GameObject mainCamera;
 
@@ -183,6 +190,9 @@ public class WorldManager : MonoBehaviour
     {
         mainCamera.transform.position = new Vector3(spawn_location.x + _playerPos.Item1, spawn_location.y + _playerPos.Item2, spawn_location.z);
     }
+    
+    
+
     // Start is called before the first frame update
     void Start()
     {       
@@ -411,6 +421,19 @@ public class WorldManager : MonoBehaviour
         {
             if (player_turn)
             {
+                if(Input.GetKeyDown("p"))
+                {
+                    if(!inventoryPanel.activeSelf)
+                    {
+                        ReadyInventoryButtons();
+                        inventoryPanel.SetActive(true);
+                    }
+                    else
+                    {
+                        inventoryPanel.SetActive(false);
+                    }
+                }
+
                 GetEnemyAroundPlayer();
                 player.GetComponent<PlayerMovement>().SetEnemyList(enemy_around_player_list);
                 //Debug.Log("Waiting for player input");
@@ -461,6 +484,83 @@ public class WorldManager : MonoBehaviour
             }
         }
         
+    }
+
+    public void ReadyInventoryButtons()
+    {
+        var playerInventory = player.GetComponent<InventorySystem>().GetInventory();
+
+        player.GetComponent<InventorySystem>().DebugInventoryContent();
+
+        ResetInventoryButtons();
+
+
+        GameObject scrollViewContent = null;
+
+        foreach(RectTransform rt in inventoryPanel.GetComponentsInChildren<RectTransform>())
+        {
+            if(rt.name.Contains("Content"))
+            {
+                scrollViewContent = rt.gameObject;
+                scrollViewContent.AddComponent<GridLayout>();
+            }
+        }
+
+        if(playerInventory.Count == 0)
+        {
+            emptyInventoryText.enabled = true;
+            return;
+        }
+        else if(playerInventory.Count > 0)
+        {
+            emptyInventoryText.enabled = false;
+        }
+
+        if(scrollViewContent == null) 
+        {
+            Debug.LogError("Cannot find scrollview");
+            return;
+        }
+
+        foreach(var itemCategory in playerInventory)
+        {
+            foreach(var item in itemCategory.Item2)
+            {
+                Debug.Log("Item: " + item.GetItem().GetItemName() + " with quantity: " + item.GetQuantity());
+                if(item.GetQuantity() > 0)
+                {
+                    GameObject itemBtn = Instantiate(inventoryButtonPrefab, scrollViewContent.transform);
+                    foreach (TextMeshProUGUI txt in itemBtn.GetComponentsInChildren<TextMeshProUGUI>())
+                    {
+                        if (txt.name == "Name") txt.text = item.GetItem().GetItemName();
+                        if (txt.name == "Quantity") txt.text = item.GetQuantity().ToString();
+                    }
+                }
+            }
+
+        }
+    }
+
+    public void ResetInventoryButtons()
+    {
+        var playerInventory = player.GetComponent<InventorySystem>().GetInventory();
+
+        GameObject scrollViewContent = null;
+
+        foreach (RectTransform rt in inventoryPanel.GetComponentsInChildren<RectTransform>())
+        {
+            if (rt.name.Contains("Content"))
+            {
+                scrollViewContent = rt.gameObject;
+                scrollViewContent.AddComponent<GridLayout>();
+            }
+        }
+
+        foreach(var btn in scrollViewContent.GetComponentsInChildren<Button>())
+        {
+            Debug.Log("found button in scrollview");
+            Destroy(btn.gameObject);
+        }
     }
 
     public int CountNumberOfEnemiesAroundPlayer()
