@@ -121,6 +121,7 @@ public class WorldManager : MonoBehaviour
     public string next_dungeon_name;
     private WorldElements[,] world_array;
     private List<GameObject> enemy_list = new List<GameObject>();
+    private List<GameObject> item_list = new List<GameObject>();
     private GameObject player;
     public (float, float) player_loc;
     public (float, float) player_locFromLevelCreation = (-1.0f, -1.0f);
@@ -182,7 +183,11 @@ public class WorldManager : MonoBehaviour
     public GameObject inventoryPanel;
     public GameObject inventoryButtonPrefab;
     public TextMeshProUGUI emptyInventoryText;
-       
+
+    // UI for main menu
+
+    public GameObject mainMenuPanel;
+
     // Camera 
     public GameObject mainCamera;
 
@@ -299,6 +304,7 @@ public class WorldManager : MonoBehaviour
         try
         {
             Debug.Log("Item Construct has: '" + item_construct.Count + "' elements");
+            int index = 1;
             foreach (ItemConstruct ic in item_construct)
             {
                 GameObject prefab = item_manager.GetComponent<ItemDictionary>().GetItem(ic.item_name);
@@ -310,11 +316,12 @@ public class WorldManager : MonoBehaviour
                 if (world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2] == null) Debug.LogError("WorldArray is Empty for this slot" + (int)ic.item_loc.Item1 + "/" + (int)ic.item_loc.Item2);
                 if (world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item == null) Debug.LogError("item field of WorldElement is empty");
                 world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.GetComponent<ItemVisuals>().SetLocation(ic.item_loc.Item1, ic.item_loc.Item2);
                 world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.gameObject.layer = 7;
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.gameObject.name = ic.item_name + "|" + "ID: " + index;
                 world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.gameObject.tag = "Item";
                 world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.GetComponent<SpriteRenderer>().sortingLayerName = "Item";
-
-
+                item_list.Add(world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item);
             }
         }
         catch (AssetNotInDictionaryException e)
@@ -546,6 +553,8 @@ public class WorldManager : MonoBehaviour
                         if (txt.name == "Name") txt.text = item.GetItem().GetItemName();
                         if (txt.name == "Quantity") txt.text = "x"+item.GetQuantity().ToString();
                     }
+
+                    itemBtn.GetComponent<Button>().onClick.AddListener(delegate { UseItemInInventory(item.GetItem().GetItemName()); });
                 }
             }
 
@@ -595,6 +604,49 @@ public class WorldManager : MonoBehaviour
         //Debug.Log("EmptyObjectCount = " + emptycount);
         return count;
     }
+
+    public void AnimateCharacter(GameObject character, string state) 
+    {
+        Animator animator = character.GetComponent<Animator>();
+
+        switch (state)
+        {
+            case "WalkUp":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                
+                break;
+            case "WalkDown":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "WalkLeft":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "WalkRight":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "Attack":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "TakeDamage":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "Death":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetBool(state, true);
+                break;
+            default:
+                Debug.LogError("State Passed in to AnimateCharacter does not correspond to any parameters");
+                break;
+        }
+
+    }
+
     public void GetEnemyAroundPlayer()
     {
         //Debug.Log("Looking for enemies around player");
@@ -742,10 +794,12 @@ public class WorldManager : MonoBehaviour
                                 // Player is stepping on an item. Automatically pick it up
                                 player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<SpriteRenderer>().enabled = false;
+                                item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 //Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
                             //Debug.Log("Moving Player Up");
+                            AnimateCharacter(player, "WalkUp");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             //world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = null;
@@ -785,10 +839,12 @@ public class WorldManager : MonoBehaviour
                             {
                                 // Player is stepping on an item. Automatically pick it up
                                 player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
                             Debug.Log("Moving Player Down");
+                            AnimateCharacter(player, "WalkDown");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
@@ -823,10 +879,12 @@ public class WorldManager : MonoBehaviour
                             {
                                 // Player is stepping on an item. Automatically pick it up
                                 player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
                             Debug.Log("Moving Player Left");
+                            AnimateCharacter(player, "WalkLeft");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
@@ -860,10 +918,12 @@ public class WorldManager : MonoBehaviour
                             {
                                 // Player is stepping on an item. Automatically pick it up
                                 player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
                             Debug.Log("Moving Player Right");
+                            AnimateCharacter(player, "WalkRight");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
@@ -887,6 +947,7 @@ public class WorldManager : MonoBehaviour
                 {
                     Debug.Log("Gameobject name: " + atk_state.target.gameObject.name);
                     Debug.Log("Target is Player");
+                    AnimateCharacter(player, "Attack");
                     switch (atk_state.move.GetStatAffected())
                     {
                         case "Health":
@@ -908,10 +969,12 @@ public class WorldManager : MonoBehaviour
                     {
                         case "Health":
                             Debug.Log("Enemy Health Affected");
+                            AnimateCharacter(player, "Attack");
                             if (atk_state.target.gameObject.GetComponent<EnemyMovement>().TakeDamage(atk_state.move.GetValue()))
                             {
                                 var tmp_x = atk_state.target.GetComponent<EnemyMovement>().location.Item1;
                                 var tmp_y = atk_state.target.GetComponent<EnemyMovement>().location.Item2;
+                                AnimateCharacter(world_array[(int)tmp_x, (int)tmp_y].character, "Death");
                                 enemy_list.Remove(world_array[(int)tmp_x, (int)tmp_y].character);
                                 Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
                                 world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
@@ -926,6 +989,7 @@ public class WorldManager : MonoBehaviour
                             // Add more stats later   
                     }
                 }
+
 
                 AttackPanel.SetActive(false);
                 target_enemy_panel.SetActive(false);
@@ -958,6 +1022,10 @@ public class WorldManager : MonoBehaviour
     public List<GameObject> GetEnemyList()
     {
         return enemy_list;
+    }
+    public List<GameObject> GetItemList()
+    {
+        return item_list;
     }
     public string GetDungeonname()
     {
@@ -999,6 +1067,8 @@ public class WorldManager : MonoBehaviour
 
     public void PrepareWorld()
     {
+
+        mainMenuPanel.SetActive(false);
         world_array = new WorldElements[x_size, y_size];
         Debug.Log("In Prepare world, x:" + x_size + " & y:" + y_size);
         for (int x = 0; x < x_size; x++)
@@ -1197,6 +1267,7 @@ public class WorldManager : MonoBehaviour
                         {
                             float tmp_x = stAttack.target.GetComponent<PlayerMovement>().GetPlayerLocation().Item1;
                             float tmp_y = stAttack.target.GetComponent<PlayerMovement>().GetPlayerLocation().Item2;
+                            AnimateCharacter(world_array[(int)tmp_x, (int)tmp_y].character, "Death");
                             Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
                             world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
                             playerDead = true;
@@ -1234,6 +1305,7 @@ public class WorldManager : MonoBehaviour
                         // Find Enemy Location
                         new_enemy_loc.Item1 -= 1.0f;
                         // Move enemy to new location;
+                        AnimateCharacter(_Enemy, "WalkLeft");
                         _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
                         world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
                         world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
@@ -1244,6 +1316,7 @@ public class WorldManager : MonoBehaviour
                         // Find Enemy Location
                         new_enemy_loc.Item2 -= 1.0f;
                         // Move enemy to new location;
+                        AnimateCharacter(_Enemy, "WalkDown");
                         _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
                         world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
                         world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
@@ -1254,6 +1327,7 @@ public class WorldManager : MonoBehaviour
                         // Find Enemy Location
                         new_enemy_loc.Item1 += 1.0f;
                         // Move enemy to new location;
+                        AnimateCharacter(_Enemy, "WalkRight");
                         _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
                         world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
                         world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
@@ -1264,6 +1338,7 @@ public class WorldManager : MonoBehaviour
                         // Find Enemy Location
                         new_enemy_loc.Item2 += 1.0f;
                         // Move enemy to new location;
+                        AnimateCharacter(_Enemy, "WalkUp");
                         _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
                         world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
                         world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
@@ -1273,6 +1348,15 @@ public class WorldManager : MonoBehaviour
                 }
             break;   
         }
+    }
+
+    public void UseItemInInventory(string itemName)
+    {
+        player_turn = false;
+        enemy_turn = true;
+        player.GetComponent<InventorySystem>().UseItem(itemName);
+        ResetInventoryButtons();
+        inventoryPanel.SetActive(false);
     }
 
     public void LoadNextLevel()
@@ -1311,12 +1395,16 @@ public class WorldManager : MonoBehaviour
         List<(string, int)> inventoryRecord = new List<(string, int)>();
         saveLine = srInterim.ReadLine();
         if (saveLine != "PlayerInventory") Debug.LogError("Wrong read in interim save file in LoadNextLevel in WorldManager.cs");
+        Debug.Log("saveLine: " + saveLine);
         //saveLine = srInterim.ReadLine();
         while (saveLine != "end-inventory")
         {
             saveLine = srInterim.ReadLine();
-            
-            if(saveLine.Contains("Item type"))
+            if (saveLine.Contains("Empty"))
+            {
+                break;
+            }
+            else if (saveLine.Contains("Item type"))
             {
                 saveLine = srInterim.ReadLine();
 
@@ -1513,6 +1601,11 @@ public class WorldManager : MonoBehaviour
 
             }
             sr.WriteLine("end-type");
+        }
+        
+        if(inventory.Count <= 0)
+        {
+            sr.WriteLine("empty");
         }
 
         sr.WriteLine("end-inventory");

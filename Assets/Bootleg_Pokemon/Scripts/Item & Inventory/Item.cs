@@ -10,6 +10,7 @@ public class Item
     [SerializeField]
     protected string type;
 
+
     public string GetItemName()
     {
         return itemName;

@@ -33,6 +33,10 @@ public class InventorySystem : MonoBehaviour
             quantity += _q;
             Debug.Log("quantity after is: " + quantity);
         }
+        public void UseItem()
+        {
+            quantity--;
+        }
     }
 
     public ItemDetailGuide itemGuide;
@@ -40,13 +44,13 @@ public class InventorySystem : MonoBehaviour
 
 
     // string is the type of item whether it be a consumable or key item and is to categorise the list of item element it is the key of
-    private List<(string, List<ItemElement>)> Inventory = new List<(string, List<ItemElement>)>();
+    private List<(string, List<ItemElement>)> inventory = new List<(string, List<ItemElement>)>();
 
     public List<ItemElement> inventoryInspector = new List<ItemElement>();
 
     public void DebugInventoryContent()
     {
-        foreach(var itemType in Inventory)
+        foreach(var itemType in inventory)
         {
             Debug.Log("DebugInventoryContent -Item type: " + itemType.Item1);
             foreach(var item in itemType.Item2)
@@ -60,7 +64,7 @@ public class InventorySystem : MonoBehaviour
 
     public List<(string, List<ItemElement>)>GetInventory()
     {
-        return Inventory;
+        return inventory;
     }
     public void PickupItem(GameObject _itemVisual)
     {
@@ -71,7 +75,55 @@ public class InventorySystem : MonoBehaviour
     
     public void UseItem(string name)
     {
-  
+        int indexCategory = 0;
+        int indexItem = 0;
+
+        bool removeCategory = false;
+        bool removeItem = false;
+        foreach(var i in inventory)
+        {
+            
+            foreach(var ie in i.Item2)
+            {
+                if(ie.GetItem().GetItemName().Contains(name))
+                {
+                    ie.UseItem();
+                    if(ie.GetQuantity() <= 0)
+                    {
+                        if(i.Item2.Count == 1)
+                        {
+                            removeCategory = true;
+                            break;
+
+                        }
+                        else
+                        {
+                            removeItem = true;
+                            break;
+                        }
+                    }
+                }
+                if(removeItem || removeCategory)
+                {
+                    break;
+                }
+                indexItem++;
+            }
+            if(removeItem || removeCategory)
+            {
+                break;
+            }
+            indexCategory++;
+        }
+
+        if(removeCategory)
+        {
+            inventory.RemoveAt(indexCategory);
+        }
+        else if (removeItem)
+        {
+            inventory[indexCategory].Item2.RemoveAt(indexItem);
+        }
     } 
 
     public void PrepareInventory()
@@ -95,7 +147,7 @@ public class InventorySystem : MonoBehaviour
     {
         bool itemtype_exist = false;
 
-        foreach ((string, List<ItemElement>) t in Inventory)
+        foreach ((string, List<ItemElement>) t in inventory)
         {
             //Debug.Log("DebugInventory - Item type in inventory is: " + t.Item1);
             //Debug.Log("DebugInventory - Item type passed in is: " + item.GetItemType());
@@ -149,7 +201,7 @@ public class InventorySystem : MonoBehaviour
         {
             List<ItemElement> tmp = new List<ItemElement>();
             tmp.Add(new ItemElement(item));
-            Inventory.Add((item.GetItemType(), tmp));
+            inventory.Add((item.GetItemType(), tmp));
             inventoryInspector.Add(new ItemElement(item, 1));
         }
 

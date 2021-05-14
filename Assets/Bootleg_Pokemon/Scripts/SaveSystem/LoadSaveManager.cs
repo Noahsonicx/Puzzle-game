@@ -160,32 +160,37 @@ public class LoadSaveManager : MonoBehaviour
 
         List<(string, int)> inventoryRecord = new List<(string, int)>();
         line = sr.ReadLine();
-        if (line != "PlayerInventory") Debug.LogError("Wrong read in interim save file in LoadNextLevel in WorldManager.cs");
+        if (line != "PlayerInventory") Debug.LogError("Wrong read in LoadFromSave in LoadSaveManager.cs");
+        line = sr.ReadLine();
         while (line != "end-inventory")
         {
-            sr.ReadLine();
             while (line != "end-type")
             {
-                line = sr.ReadLine();
+                if (line.Contains("empty")) break;
+                if (line.Contains("Item type")) line = sr.ReadLine();
+                Debug.Log("Line: " + line);
                 string[] itemDeets = line.Split(',');
                 string itemName = itemDeets[0];
                 int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
                 inventoryRecord.Add((itemName, itemQuantity));
+                line = sr.ReadLine();
             }
+            line = sr.ReadLine();
         }
-
+        Debug.Log("Finished Loading from Save");
         wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4, inventoryRecord);
 
         line = sr.ReadLine();
-        if (line != "Item on Level") Debug.LogError("Text Differs for: " + line);
+        if (line != "ItemOnLevel") Debug.LogError("Text Differs for: " + line);
+        line = sr.ReadLine();
         while (line != "end-item")
         {
-            line = sr.ReadLine();
             string[] item_details = line.Split(',');
             string itemName = item_details[0];
             float item_x = float.Parse(item_details[1], CultureInfo.InvariantCulture.NumberFormat);
             float item_y = float.Parse(item_details[2], CultureInfo.InvariantCulture.NumberFormat);
             wm.LoadItem(itemName, (item_x, item_y));
+            line = sr.ReadLine();
         }
 
         wm.SetLoadStatusReady();

@@ -10,6 +10,7 @@ public class SaveManager : MonoBehaviour
     public GameObject wm_object;
     public WorldManager wm;
     public ElemontalAssetsDictionaryManager elemontalDictionary;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -89,6 +90,8 @@ public class SaveManager : MonoBehaviour
 
         sr.WriteLine(playermove);
 
+        sr.WriteLine("PlayerInventory");
+
         // Save Player Inventory (TODO: Once player inventory has been implemented)
 
         var inventory = player.GetComponent<InventorySystem>().GetInventory();
@@ -102,7 +105,28 @@ public class SaveManager : MonoBehaviour
             {
                 sr.WriteLine(inventory[i].Item2[z].GetItem().GetItemName() + "," + inventory[i].Item2[z].GetQuantity());
             }
+            sr.WriteLine("end-type");
         }
+
+        if(inventory.Count <= 0)
+        {
+            sr.WriteLine("empty");
+        }
+        sr.WriteLine("end-inventory");
+
+        sr.WriteLine("ItemOnLevel");
+
+        var itemList = wm.GetItemList();
+
+
+        foreach(var item in itemList)
+        {
+            ItemVisuals tmp = item.GetComponent<ItemVisuals>();
+            sr.WriteLine(tmp.GetItemName() + "," + tmp.GetLocation().Item1 + "," + tmp.GetLocation().Item2);
+        }
+        if (itemList.Count <= 0) sr.WriteLine("No more Item in Level");
+
+        sr.WriteLine("end-item");
     }
 
     public void SaveStartFile(string element)

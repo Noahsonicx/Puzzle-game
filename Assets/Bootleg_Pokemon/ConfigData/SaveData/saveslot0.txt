@@ -1,7 +1,7 @@
 saveslot0
 DungeonName: Trial
 PlayerStatistics:
-Kizerain,-1,-1,20,20,8,8
+Aloidia,-1,-1,20,20,8,8
 PlayerMoveset:
 Blaze,Blaze,Blaze,Blaze
 PlayerInventory
