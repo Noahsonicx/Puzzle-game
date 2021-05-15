@@ -394,7 +394,8 @@ public class PlayerMovement : MonoBehaviour
     }
     public void SetText()
     {
-        GetComponent<Elemontals>().ChangeText(current_health + "/" + max_health);
+        GetComponent<Elemontals>().ChangeHealthText(current_health + "/" + max_health);
+        GetComponent<Elemontals>().ChangeEnergyText(current_energy + "/" + max_energy);
     }
     public void TakeDamage(float dmg)
     {
@@ -413,6 +414,17 @@ public class PlayerMovement : MonoBehaviour
         {
             current_health = max_health;
         }
+        
         SetText();
     }
+
+    public void HealEnergy(float val)
+    {
+        current_energy += val;
+        if(current_energy > max_energy)
+        {
+            current_energy = max_energy;
+        }
+        SetText();
+    } 
 }

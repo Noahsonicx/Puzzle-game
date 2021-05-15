@@ -120,7 +120,9 @@ public class WorldManager : MonoBehaviour
     public string dungeon_name;
     public string next_dungeon_name;
     private WorldElements[,] world_array;
+    [SerializeField]
     private List<GameObject> enemy_list = new List<GameObject>();
+    [SerializeField]
     private List<GameObject> item_list = new List<GameObject>();
     private GameObject player;
     public (float, float) player_loc;
@@ -179,14 +181,15 @@ public class WorldManager : MonoBehaviour
     public GameObject target_e8;
 
     // UI for player's inventory
-
     public GameObject inventoryPanel;
     public GameObject inventoryButtonPrefab;
     public TextMeshProUGUI emptyInventoryText;
 
     // UI for main menu
-
     public GameObject mainMenuPanel;
+
+    // UI for game over 
+    public GameObject gameOverPanel;
 
     // Camera 
     public GameObject mainCamera;
@@ -276,7 +279,7 @@ public class WorldManager : MonoBehaviour
                 
                 world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
                 Debug.Log("Spawning wall at location: " + ec.asset_loc.Item1 + "/" + ec.asset_loc.Item2);
-                if (ec.asset_key.Contains("w")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
+                if (ec.asset_key.Contains("w") || ec.asset_key.Contains("i")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
                 else if (ec.asset_key.Contains("g")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Ground";
                 else if (ec.asset_key.Contains("s"))
                 {
@@ -794,7 +797,7 @@ public class WorldManager : MonoBehaviour
                                 // Player is stepping on an item. Automatically pick it up
                                 player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<SpriteRenderer>().enabled = false;
-                                item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                if (item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item)) Debug.Log("Item" + world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<ItemVisuals>().itemName + "removed successfully");
                                 //Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
@@ -839,7 +842,7 @@ public class WorldManager : MonoBehaviour
                             {
                                 // Player is stepping on an item. Automatically pick it up
                                 player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
-                                item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                if (item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item)) Debug.Log("Item" + world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<ItemVisuals>().itemName + "removed successfully");
                                 Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
@@ -879,7 +882,7 @@ public class WorldManager : MonoBehaviour
                             {
                                 // Player is stepping on an item. Automatically pick it up
                                 player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
-                                item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                if (item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item)) Debug.Log("Item" + world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<ItemVisuals>().itemName + "removed successfully");
                                 Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
@@ -918,7 +921,7 @@ public class WorldManager : MonoBehaviour
                             {
                                 // Player is stepping on an item. Automatically pick it up
                                 player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
-                                item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                if (item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item)) Debug.Log("Item" + world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<ItemVisuals>().itemName + "removed successfully");
                                 Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
@@ -1079,28 +1082,27 @@ public class WorldManager : MonoBehaviour
             }
         }
     }
-
-    public void ResetWorld()
+    public void DestroyWorld()
     {
         level_loaded = false;
         load_data_ready = false;
-        if(world_array != null)
+        if (world_array != null)
         {
             for (int x = 0; x < x_size; x++)
             {
                 for (int y = 0; y < y_size; y++)
                 {
-                    if(world_array[x,y].character.name != EmptyObject.name)
+                    if (world_array[x, y].character.name != EmptyObject.name)
                     {
                         Destroy(world_array[x, y].character.gameObject);
                         world_array[x, y].character = EmptyObject;
                     }
-                    if(world_array[x,y].environment.name != EmptyObject.name)
+                    if (world_array[x, y].environment.name != EmptyObject.name)
                     {
                         Destroy(world_array[x, y].environment.gameObject);
                         world_array[x, y].environment = EmptyObject;
                     }
-                    if(world_array[x,y].item.name != EmptyObject.name)
+                    if (world_array[x, y].item.name != EmptyObject.name)
                     {
                         Destroy(world_array[x, y].item.gameObject);
                         world_array[x, y].item = EmptyObject;
@@ -1108,12 +1110,18 @@ public class WorldManager : MonoBehaviour
                 }
             }
         }
-        
+
         enemy_list.Clear();
         enemy_construct.Clear();
         asset_construct.Clear();
         item_construct.Clear();
+        if (player != null) ResetInventoryButtons();
         playerDead = false;
+        AttackButton.SetActive(false);
+    }
+    public void ResetWorld()
+    {
+        DestroyWorld();
         PrepareWorld();
     }
 
@@ -1271,6 +1279,7 @@ public class WorldManager : MonoBehaviour
                             Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
                             world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
                             playerDead = true;
+                            gameOverPanel.SetActive(true);
                         }
                         break;
                 }

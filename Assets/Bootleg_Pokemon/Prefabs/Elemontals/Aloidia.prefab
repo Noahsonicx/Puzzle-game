@@ -371,9 +371,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98af9df8ef511354b9d26b7a50c16756, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  elemontal_name: Spinarak
-  healthPoints: 20
-  energyPoints: 8
+  elemontal_name: Aloidia
+  healthPoints: 50
+  energyPoints: 25
   listOfAllPossibleAbilities: []
   startingAbilities:
   - Blaze

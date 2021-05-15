@@ -78,15 +78,19 @@ public class LoadSaveManager : MonoBehaviour
 
     public void LoadSaveController(string filename)
     {
-        if(LoadFromSave(filename))
-        {
-            loadSavePanel.SetActive(false);
-        }
-        else
+        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\SaveData\" + filename + ".txt";
+        if (!File.Exists(path))
         {
             saveErrorPanel.SetActive(true);
             saveErrorPanel.GetComponentInChildren<TextMeshProUGUI>().text = filename + " is empty";
+
         }
+        else if(LoadFromSave(filename))
+        {
+            loadSavePanel.SetActive(false);
+        }
+        return;
+
     }
 
     public bool LoadFromSave(string filename)
@@ -185,6 +189,7 @@ public class LoadSaveManager : MonoBehaviour
         line = sr.ReadLine();
         while (line != "end-item")
         {
+            if (line.Contains("No")) break;
             string[] item_details = line.Split(',');
             string itemName = item_details[0];
             float item_x = float.Parse(item_details[1], CultureInfo.InvariantCulture.NumberFormat);
@@ -518,5 +523,10 @@ public class LoadSaveManager : MonoBehaviour
         line = sr.ReadLine();
         if (line != "end-dungeon") Debug.LogError("Load Level Over-Read in file: " + level_name + ".txt");
     }
+    
 
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 }

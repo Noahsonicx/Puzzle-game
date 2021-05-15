@@ -1,0 +1,17 @@
+saveslot3
+DungeonName = Trial
+Enemies on Level
+Ferirama,1,5,20,20,Blaze,Blaze,Blaze,Blaze
+Naiad,4,5,15,15,Water Whip,Water Whip,Water Whip,Ice Shot
+end-enemy
+PlayerStatistics:
+Naiad,5,2,15,15,15,15
+PlayerMoveset:
+Pound,Pound,Ice Shot,Ice Wall
+PlayerInventory
+empty
+end-inventory
+ItemOnLevel
+HealthPotion,1,2
+EnergyPotion,2,2
+end-item

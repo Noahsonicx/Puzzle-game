@@ -13,4 +13,8 @@ public class Potion :  Item
     {
         return statAffected;
     }
+    public float GetValueAffected()
+    {
+        return valueAffected;
+    }
 }

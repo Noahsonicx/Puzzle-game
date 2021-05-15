@@ -247,7 +247,7 @@ Animator:
   m_GameObject: {fileID: 3664739509792732187}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: c5bd7977313cc864c9935674731e42db, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -443,9 +443,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98af9df8ef511354b9d26b7a50c16756, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  elemontal_name: Spinarak
-  healthPoints: 20
-  energyPoints: 8
+  elemontal_name: Ferirama
+  healthPoints: 40
+  energyPoints: 20
   listOfAllPossibleAbilities: []
   startingAbilities:
   - Blaze

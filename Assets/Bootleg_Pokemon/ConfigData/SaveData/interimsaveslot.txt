@@ -1,9 +1,12 @@
 interimsaveslot
-DungeonName: Trial2
+DungeonName: SmallLevelFive
 PlayerStatistics:
-Kizerain,-1,-1,20,20,8,8
+Aloidia,-1,-1,26,50,25,25
 PlayerMoveset:
 Blaze,Blaze,Blaze,Blaze
 PlayerInventory
-empty
+Item type: Consumable
+HealthPotion,6
+EnergyPotion,5
+end-type
 end-inventory

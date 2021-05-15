@@ -36,9 +36,13 @@ public class Elemontals : MonoBehaviour
     {
         return energyPoints;
     }
-    public void ChangeText(string _text)
+    public void ChangeHealthText(string _text)
     {
         health_text.text = _text;
+    }
+    public void ChangeEnergyText(string _text)
+    {
+        energy_text.text = _text;
     }
     public string GetStartingMoves()
     {

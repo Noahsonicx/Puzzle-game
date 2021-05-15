@@ -121,8 +121,11 @@ public class SaveManager : MonoBehaviour
 
         foreach(var item in itemList)
         {
-            ItemVisuals tmp = item.GetComponent<ItemVisuals>();
-            sr.WriteLine(tmp.GetItemName() + "," + tmp.GetLocation().Item1 + "," + tmp.GetLocation().Item2);
+            if(item != null)
+            {
+                ItemVisuals tmp = item.GetComponent<ItemVisuals>();
+                sr.WriteLine(tmp.GetItemName() + "," + tmp.GetLocation().Item1 + "," + tmp.GetLocation().Item2);
+            }
         }
         if (itemList.Count <= 0) sr.WriteLine("No more Item in Level");
 
@@ -156,7 +159,7 @@ public class SaveManager : MonoBehaviour
         sr.WriteLine(filename);
         Elemontals elemontalPicked = elemontalDictionary.GetAsset(elemontalName).GetComponent<Elemontals>();
         //Save Dungeon Name:
-        sr.WriteLine("DungeonName: Trial"); // Change here if starting dungeon is different
+        sr.WriteLine("DungeonName: SmallLevelOne"); // Change here if starting dungeon is different
 
         //Save PlayerStats
         sr.WriteLine("PlayerStatistics:");

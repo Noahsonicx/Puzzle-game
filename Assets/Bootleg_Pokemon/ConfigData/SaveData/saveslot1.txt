@@ -5,14 +5,13 @@ Ferirama,1,5,20,20,Blaze,Blaze,Blaze,Blaze
 Naiad,4,5,15,15,Water Whip,Water Whip,Water Whip,Ice Shot
 end-enemy
 PlayerStatistics:
-Kizerain,2,2,20,20,8,8
+Naiad,5,2,15,15,15,15
 PlayerMoveset:
-Blaze,Blaze,Blaze,Blaze
+Pound,Pound,Ice Shot,Ice Wall
 PlayerInventory
-Item type:Consumable
-EnergyPotion,1
-end-type
+empty
 end-inventory
 ItemOnLevel
 HealthPotion,1,2
+EnergyPotion,2,2
 end-item

@@ -1,8 +1,8 @@
 saveslot0
-DungeonName: Trial
+DungeonName: SmallLevelOne
 PlayerStatistics:
-Aloidia,-1,-1,20,20,8,8
+Ferirama,-1,-1,40,40,20,20
 PlayerMoveset:
-Blaze,Blaze,Blaze,Blaze
+Blaze,Pound,Blaze,Pound
 PlayerInventory
 end-inventory

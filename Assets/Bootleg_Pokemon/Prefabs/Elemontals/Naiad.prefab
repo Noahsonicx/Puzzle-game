@@ -253,9 +253,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98af9df8ef511354b9d26b7a50c16756, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  elemontal_name: Pidgey
-  healthPoints: 15
-  energyPoints: 15
+  elemontal_name: Naiad
+  healthPoints: 30
+  energyPoints: 30
   listOfAllPossibleAbilities: []
   startingAbilities:
   - Pound

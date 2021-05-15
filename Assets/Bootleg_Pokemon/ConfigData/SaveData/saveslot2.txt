@@ -1,9 +1,17 @@
 saveslot2
-DungeonName: Trial
+DungeonName = Trial
 Enemies on Level
-Elemont2,2,2,15,15
+Ferirama,1,5,20,20,Blaze,Blaze,Blaze,Blaze
+Naiad,4,5,15,15,Water Whip,Water Whip,Water Whip,Ice Shot
 end-enemy
 PlayerStatistics:
-Elemont,4,5,20,20,8,8
+Kizerain,5,2,20,20,8,8
 PlayerMoveset:
-Blaze,Pound,Bless,Fire Dance
+Blaze,Blaze,Blaze,Blaze
+PlayerInventory
+empty
+end-inventory
+ItemOnLevel
+HealthPotion,1,2
+EnergyPotion,2,2
+end-item

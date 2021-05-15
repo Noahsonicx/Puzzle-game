@@ -48,6 +48,11 @@ public class InventorySystem : MonoBehaviour
 
     public List<ItemElement> inventoryInspector = new List<ItemElement>();
 
+    public void ResetInventory()
+    {
+        inventory = new List<(string, List<ItemElement>)>();
+    }
+
     public void DebugInventoryContent()
     {
         foreach(var itemType in inventory)
@@ -75,6 +80,7 @@ public class InventorySystem : MonoBehaviour
     
     public void UseItem(string name)
     {
+        PlayerMovement player = this.gameObject.GetComponent<PlayerMovement>();
         int indexCategory = 0;
         int indexItem = 0;
 
@@ -88,6 +94,29 @@ public class InventorySystem : MonoBehaviour
                 if(ie.GetItem().GetItemName().Contains(name))
                 {
                     ie.UseItem();
+                    switch(ie.GetItem().GetItemType())
+                    {
+                        case "Consumable":
+                            Potion pot = (Potion)ie.GetItem();
+                            switch(pot.GetStatAffected())
+                            {
+                                case "Health":
+                                    player.HealDamage(pot.GetValueAffected());
+                                    Debug.Log("Player Health being healed for: " + pot.GetValueAffected());
+                                    break;
+                                case "Energy":
+                                    player.HealEnergy(pot.GetValueAffected());
+                                    Debug.Log("Player Energy being healed for: " + pot.GetValueAffected());
+                                    break;
+                                default:
+                                    Debug.LogError("Stat Affected not listed");
+                                    break;
+                            }
+                            break;
+                        default:
+                            Debug.LogError("Item Type not listed");
+                            break;
+                    }
                     if(ie.GetQuantity() <= 0)
                     {
                         if(i.Item2.Count == 1)
