@@ -191,6 +191,8 @@ public class WorldManager : MonoBehaviour
     // UI for game over 
     public GameObject gameOverPanel;
 
+    // UI for finish game
+    public GameObject finishGamePanel;
     // Camera 
     public GameObject mainCamera;
 
@@ -287,6 +289,7 @@ public class WorldManager : MonoBehaviour
                     player_locFromLevelCreation = ec.asset_loc;
                 }
                 else if (ec.asset_key.Contains("n")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "NextLevelStair";
+                else if (ec.asset_key.Contains("e")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "EndGameFlag";
                 // Add More Tags above when spawning more environment element
 
                 world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.layer = 6;
@@ -786,6 +789,10 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("EndGameFlag"))
+                            {
+                                FinishGame();
+                            }
                             if(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
                             {
                                 // Player reached the stair for the next level
@@ -801,6 +808,7 @@ public class WorldManager : MonoBehaviour
                                 //Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject);
                                 world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
                             }
+                            
                             //Debug.Log("Moving Player Up");
                             AnimateCharacter(player, "WalkUp");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
@@ -832,6 +840,10 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("EndGameFlag"))
+                            {
+                                FinishGame();
+                            }
                             if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
                             {
                                 // Player reached the stair for the next level
@@ -872,6 +884,10 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("EndGameFlag"))
+                            {
+                                FinishGame();
+                            }
                             if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
                             {
                                 // Player reached the stair for the next level
@@ -911,6 +927,10 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("EndGameFlag"))
+                            {
+                                FinishGame();
+                            }
                             if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
                             {
                                 // Player reached the stair for the next level
@@ -1620,5 +1640,10 @@ public class WorldManager : MonoBehaviour
         sr.WriteLine("end-inventory");
         sr.Close();
         fs.Close();
+    }
+
+    public void FinishGame()
+    {
+        finishGamePanel.SetActive(true);
     }
 }

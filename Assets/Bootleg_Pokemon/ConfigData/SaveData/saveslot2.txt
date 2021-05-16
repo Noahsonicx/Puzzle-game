@@ -1,17 +1,17 @@
 saveslot2
-DungeonName = Trial
+DungeonName = SmallLevelFour
 Enemies on Level
-Ferirama,1,5,20,20,Blaze,Blaze,Blaze,Blaze
-Naiad,4,5,15,15,Water Whip,Water Whip,Water Whip,Ice Shot
+Naiad,5,2,30,30,Ice Shot,Ice Wall,Tidal Wave,Water Whip
 end-enemy
 PlayerStatistics:
-Kizerain,5,2,20,20,8,8
+Aloidia,5,6,17,50,25,25
 PlayerMoveset:
 Blaze,Blaze,Blaze,Blaze
 PlayerInventory
-empty
+Item type:Consumable
+HealthPotion,5
+EnergyPotion,4
+end-type
 end-inventory
 ItemOnLevel
-HealthPotion,1,2
-EnergyPotion,2,2
 end-item

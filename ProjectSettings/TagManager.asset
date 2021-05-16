@@ -10,6 +10,7 @@ TagManager:
   - Spawn
   - NextLevelStair
   - Item
+  - EndGameFlag
   layers:
   - Default
   - TransparentFX

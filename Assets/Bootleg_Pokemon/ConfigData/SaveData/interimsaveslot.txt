@@ -1,12 +1,12 @@
 interimsaveslot
 DungeonName: SmallLevelFive
 PlayerStatistics:
-Aloidia,-1,-1,26,50,25,25
+Kizerain,-1,-1,32,35,25,25
 PlayerMoveset:
 Blaze,Blaze,Blaze,Blaze
 PlayerInventory
 Item type: Consumable
-HealthPotion,6
-EnergyPotion,5
+EnergyPotion,4
+HealthPotion,3
 end-type
 end-inventory

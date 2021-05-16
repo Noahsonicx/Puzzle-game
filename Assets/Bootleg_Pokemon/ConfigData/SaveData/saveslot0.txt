@@ -1,8 +1,8 @@
 saveslot0
 DungeonName: SmallLevelOne
 PlayerStatistics:
-Ferirama,-1,-1,40,40,20,20
+Kizerain,-1,-1,35,35,25,25
 PlayerMoveset:
-Blaze,Pound,Blaze,Pound
+Blaze,Blaze,Blaze,Blaze
 PlayerInventory
 end-inventory

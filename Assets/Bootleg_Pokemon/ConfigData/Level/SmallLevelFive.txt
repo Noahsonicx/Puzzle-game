@@ -10,7 +10,7 @@ g2 w2 g1 g1 g0 g0 g0 g1 g1 w3 g4
 g2 w2 g0 g1 g0 g0 g0 g1 g0 w3 g3
 g2 w4 w0 i3 g0 g0 g0 i1 w0 w6 g2
 g3 g2 g2 i4 g0 g0 g0 i5 g2 g2 g2
-g3 g4 g2 i4 g0 n0 g0 i5 g2 g3 g3
+g3 g4 g2 i4 g0 e1 g0 i5 g2 g3 g3
 g4 g3 g2 w4 i6 i6 i6 w6 g2 g3 g3
 end-dungeon
 Enemies on Level
