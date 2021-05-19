@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class WorldManager : MonoBehaviour
@@ -21,18 +22,42 @@ public class WorldManager : MonoBehaviour
         }
     }
 
-    public struct EnvironmentContruct
+    public struct ItemData
+    {
+        public string item_Id;
+        public float x;
+        public float y;
+
+        public ItemData(string _id, float _x, float _y)
+        {
+            item_Id = _id;
+            x = _x;
+            y = _y;
+        }
+    }
+
+    public struct EnvironmentConstruct
     {
         public string asset_key;
         public (float, float) asset_loc;
 
-        public EnvironmentContruct(string _key, (float, float) _loc) {
+        public EnvironmentConstruct(string _key, (float, float) _loc) {
 
             asset_key = _key;
             asset_loc = _loc;
         }
     }
+    public struct ItemConstruct
+    {
+        public string item_name;
+        public (float, float) item_loc;
 
+        public ItemConstruct(string _itemName ,(float,float) _loc)
+        {
+            item_name = _itemName;
+            item_loc = _loc;
+        }
+    }
     public struct EnemyConstruct
     {
         public string elemontal_key;
@@ -67,7 +92,8 @@ public class WorldManager : MonoBehaviour
         public string move2;
         public string move3;
         public string move4;
-        public PlayerConstruct(string _key, float _x, float _y, float _cur_h, float _max_h, float _cur_e, float _max_e, string m1, string m2, string m3, string m4)
+        public List<(string, int)> inventoryRecord;
+        public PlayerConstruct(string _key, float _x, float _y, float _cur_h, float _max_h, float _cur_e, float _max_e, string m1, string m2, string m3, string m4, List<(string,int)> _inventoryRecord)
         {
             elemontal_key = _key;
             player_loc = (_x, _y);
@@ -79,6 +105,7 @@ public class WorldManager : MonoBehaviour
             move2 = m2;
             move3 = m3;
             move4 = m4;
+            inventoryRecord = _inventoryRecord;
         }
     }
     // World Settings and Contents
@@ -93,14 +120,18 @@ public class WorldManager : MonoBehaviour
     public string dungeon_name;
     public string next_dungeon_name;
     private WorldElements[,] world_array;
+    [SerializeField]
     private List<GameObject> enemy_list = new List<GameObject>();
+    [SerializeField]
+    private List<GameObject> item_list = new List<GameObject>();
     private GameObject player;
     public (float, float) player_loc;
     public (float, float) player_locFromLevelCreation = (-1.0f, -1.0f);
     public bool playerDead = false;
 
     //Construct used to hold data when loading
-    public List<EnvironmentContruct> asset_construct = new List<EnvironmentContruct>();
+    public List<EnvironmentConstruct> asset_construct = new List<EnvironmentConstruct>();
+    public List<ItemConstruct> item_construct = new List<ItemConstruct>();
     public List<EnemyConstruct> enemy_construct = new List<EnemyConstruct>();
     public PlayerConstruct player_construct;
 
@@ -111,6 +142,7 @@ public class WorldManager : MonoBehaviour
     public GameObject environment_asset_manager;
     public GameObject elemontal_asset_manager;
     public GameObject moveset_manager;
+    public GameObject item_manager;
 
     // Turn Base System Variables
     private bool player_turn = true;
@@ -148,6 +180,19 @@ public class WorldManager : MonoBehaviour
     public GameObject target_e7;
     public GameObject target_e8;
 
+    // UI for player's inventory
+    public GameObject inventoryPanel;
+    public GameObject inventoryButtonPrefab;
+    public TextMeshProUGUI emptyInventoryText;
+
+    // UI for main menu
+    public GameObject mainMenuPanel;
+
+    // UI for game over 
+    public GameObject gameOverPanel;
+
+    // UI for finish game
+    public GameObject finishGamePanel;
     // Camera 
     public GameObject mainCamera;
 
@@ -155,6 +200,9 @@ public class WorldManager : MonoBehaviour
     {
         mainCamera.transform.position = new Vector3(spawn_location.x + _playerPos.Item1, spawn_location.y + _playerPos.Item2, spawn_location.z);
     }
+    
+    
+
     // Start is called before the first frame update
     void Start()
     {       
@@ -170,7 +218,8 @@ public class WorldManager : MonoBehaviour
             {
                 if (!environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetDictionaryReadyStatus()
                     || !moveset_manager.GetComponent<MoveSetDictionary>().GetDictionaryReadyStatus()
-                    || !elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetDictionaryReadyStatus())
+                    || !elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetDictionaryReadyStatus()
+                    || !item_manager.GetComponent<ItemDictionary>().GetDictionaryReadyStatus())
                 {
                     Debug.Log("Still Loading Dictionaries");
                 }
@@ -198,6 +247,10 @@ public class WorldManager : MonoBehaviour
                     // Add Enemies into the world
                     SpawnEnemy();
                     //Debug.Log("Finished Loading Enemy");
+                    // Step 4:
+                    // Add item to the world
+                    SpawnItem();
+                    
                     level_loaded = true; // Level finished loading. Start Turn System after this.
                                          //Debug.Log("Finished Loading Level");
                 }
@@ -215,21 +268,20 @@ public class WorldManager : MonoBehaviour
         
         try
         {
-            foreach (EnvironmentContruct ec in asset_construct)
+            foreach (EnvironmentConstruct ec in asset_construct)
             {
                 GameObject prefab = environment_asset_manager.GetComponent<EnvironmentAssetsDictionaryManager>().GetAsset(ec.asset_key);
                 if (prefab == null)
                 {
                     throw (new AssetNotInDictionaryException("No Asset called:"+ ec.asset_key + "in Dictionary"));
                 }
-
-                //TODO:
                 Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ec.asset_loc.Item1, spawn_location.y + ec.asset_loc.Item2);
                 if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2] == null) Debug.LogError("WorldArray is Empty for this slot" + (int)ec.asset_loc.Item1 + "/" + (int)ec.asset_loc.Item2);
                 if (world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment == null) Debug.LogError("Environment field of WorldElement is empty");
-                    world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                
+                world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment = Instantiate(prefab, relative_spawn_loc, new Quaternion());
                 Debug.Log("Spawning wall at location: " + ec.asset_loc.Item1 + "/" + ec.asset_loc.Item2);
-                if (ec.asset_key.Contains("w")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
+                if (ec.asset_key.Contains("w") || ec.asset_key.Contains("i")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Wall";
                 else if (ec.asset_key.Contains("g")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "Ground";
                 else if (ec.asset_key.Contains("s"))
                 {
@@ -237,6 +289,7 @@ public class WorldManager : MonoBehaviour
                     player_locFromLevelCreation = ec.asset_loc;
                 }
                 else if (ec.asset_key.Contains("n")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "NextLevelStair";
+                else if (ec.asset_key.Contains("e")) world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.tag = "EndGameFlag";
                 // Add More Tags above when spawning more environment element
 
                 world_array[(int)ec.asset_loc.Item1, (int)ec.asset_loc.Item2].environment.gameObject.layer = 6;
@@ -251,6 +304,37 @@ public class WorldManager : MonoBehaviour
         }
        
     }
+
+    public void SpawnItem()
+    {
+        try
+        {
+            Debug.Log("Item Construct has: '" + item_construct.Count + "' elements");
+            int index = 1;
+            foreach (ItemConstruct ic in item_construct)
+            {
+                GameObject prefab = item_manager.GetComponent<ItemDictionary>().GetItem(ic.item_name);
+                if (prefab == null)
+                {
+                    throw (new AssetNotInDictionaryException("No Asset called:" + ic.item_name + " in ItemDictionary"));
+                }
+                Vector2 relative_spawn_loc = new Vector2(spawn_location.x + ic.item_loc.Item1, spawn_location.y + ic.item_loc.Item2);
+                if (world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2] == null) Debug.LogError("WorldArray is Empty for this slot" + (int)ic.item_loc.Item1 + "/" + (int)ic.item_loc.Item2);
+                if (world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item == null) Debug.LogError("item field of WorldElement is empty");
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item = Instantiate(prefab, relative_spawn_loc, new Quaternion());
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.GetComponent<ItemVisuals>().SetLocation(ic.item_loc.Item1, ic.item_loc.Item2);
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.gameObject.layer = 7;
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.gameObject.name = ic.item_name + "|" + "ID: " + index;
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.gameObject.tag = "Item";
+                world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item.GetComponent<SpriteRenderer>().sortingLayerName = "Item";
+                item_list.Add(world_array[(int)ic.item_loc.Item1, (int)ic.item_loc.Item2].item);
+            }
+        }
+        catch (AssetNotInDictionaryException e)
+        {
+            Debug.LogError(e.Message);
+        }
+    }
     private void SpawnPlayer()
     {
         // This should essentially save to file so that character stats are saved between levels and when loading game.
@@ -259,6 +343,8 @@ public class WorldManager : MonoBehaviour
             player_loc = player_locFromLevelCreation;
         }
         else player_loc = player_construct.player_loc;
+
+        playerPrefab = elemontal_asset_manager.GetComponent<ElemontalAssetsDictionaryManager>().GetAsset(player_construct.elemontal_key);
 
         world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = Instantiate(playerPrefab, new Vector2(spawn_location.x + player_loc.Item1, spawn_location.y + player_loc.Item2), new Quaternion());
         player = world_array[(int)player_loc.Item1, (int)player_loc.Item2].character;
@@ -280,6 +366,14 @@ public class WorldManager : MonoBehaviour
         player.gameObject.layer = 8;
         player.GetComponent<SpriteRenderer>().sortingLayerName = "Character";
         player.GetComponentInChildren<Canvas>().sortingLayerName = "HUD";
+        player.AddComponent<InventorySystem>();
+        player.GetComponent<InventorySystem>().PrepareInventory();
+        Debug.Log("inventory count: " + player_construct.inventoryRecord.Count);
+        if(player_construct.inventoryRecord.Count != 0)
+        {
+            player.GetComponent<InventorySystem>().LoadInventory(player_construct.inventoryRecord);
+        }
+        player.GetComponent<InventorySystem>().DebugInventoryContent();
         UpdateCameraLocation(player_loc);
     }
     private void SpawnEnemy()
@@ -341,6 +435,21 @@ public class WorldManager : MonoBehaviour
         {
             if (player_turn)
             {
+                if(Input.GetKeyDown("p"))
+                {
+                    if(!inventoryPanel.activeSelf)
+                    {
+                        DebugInventoryContent();
+                        ReadyInventoryButtons();
+                        inventoryPanel.SetActive(true);
+                    }
+                    else
+                    {
+                        ResetInventoryButtons();
+                        inventoryPanel.SetActive(false);
+                    }
+                }
+
                 GetEnemyAroundPlayer();
                 player.GetComponent<PlayerMovement>().SetEnemyList(enemy_around_player_list);
                 //Debug.Log("Waiting for player input");
@@ -393,6 +502,93 @@ public class WorldManager : MonoBehaviour
         
     }
 
+    public void DebugInventoryContent()
+    {
+        foreach (var itemType in player.GetComponent<InventorySystem>().GetInventory())
+        {
+            Debug.Log("DebugInventoryWorldManager-Item type: " + itemType.Item1);
+            foreach (var item in itemType.Item2)
+            {
+                Debug.Log("DebugInventoryWorldManager-Item name: " + item.GetItem().GetItemName() + " Item Quantity: " + item.GetQuantity().ToString());
+
+            }
+        }
+    }
+                
+    public void ReadyInventoryButtons()
+    {
+        var playerInventory = player.GetComponent<InventorySystem>().GetInventory();
+
+        GameObject scrollViewContent = null;
+
+        foreach(RectTransform rt in inventoryPanel.GetComponentsInChildren<RectTransform>())
+        {
+            if(rt.name.Contains("Content"))
+            {
+                scrollViewContent = rt.gameObject;
+                scrollViewContent.AddComponent<GridLayout>();
+            }
+        }
+
+        if(playerInventory.Count == 0)
+        {
+            emptyInventoryText.enabled = true;
+            return;
+        }
+        else if(playerInventory.Count > 0)
+        {
+            emptyInventoryText.enabled = false;
+        }
+
+        if(scrollViewContent == null) 
+        {
+            Debug.LogError("Cannot find scrollview");
+            return;
+        }
+
+        foreach(var itemCategory in playerInventory)
+        {
+            foreach(var item in itemCategory.Item2)
+            {
+                Debug.Log("Item: " + item.GetItem().GetItemName() + " with quantity: " + item.GetQuantity());
+                if(item.GetQuantity() > 0)
+                {
+                    GameObject itemBtn = Instantiate(inventoryButtonPrefab, scrollViewContent.transform);
+                    foreach (TextMeshProUGUI txt in itemBtn.GetComponentsInChildren<TextMeshProUGUI>())
+                    {
+                        if (txt.name == "Name") txt.text = item.GetItem().GetItemName();
+                        if (txt.name == "Quantity") txt.text = "x"+item.GetQuantity().ToString();
+                    }
+
+                    itemBtn.GetComponent<Button>().onClick.AddListener(delegate { UseItemInInventory(item.GetItem().GetItemName()); });
+                }
+            }
+
+        }
+    }
+
+    public void ResetInventoryButtons()
+    {
+        var playerInventory = player.GetComponent<InventorySystem>().GetInventory();
+
+        GameObject scrollViewContent = null;
+
+        foreach (RectTransform rt in inventoryPanel.GetComponentsInChildren<RectTransform>())
+        {
+            if (rt.name.Contains("Content"))
+            {
+                scrollViewContent = rt.gameObject;
+                scrollViewContent.AddComponent<GridLayout>();
+            }
+        }
+
+        foreach(var btn in scrollViewContent.GetComponentsInChildren<Button>())
+        {
+            Debug.Log("found button in scrollview");
+            Destroy(btn.gameObject);
+        }
+    }
+
     public int CountNumberOfEnemiesAroundPlayer()
     {
         int count = 0;
@@ -414,6 +610,49 @@ public class WorldManager : MonoBehaviour
         //Debug.Log("EmptyObjectCount = " + emptycount);
         return count;
     }
+
+    public void AnimateCharacter(GameObject character, string state) 
+    {
+        Animator animator = character.GetComponent<Animator>();
+
+        switch (state)
+        {
+            case "WalkUp":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                
+                break;
+            case "WalkDown":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "WalkLeft":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "WalkRight":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "Attack":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "TakeDamage":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetTrigger(state);
+                break;
+            case "Death":
+                Debug.Log("DebugAnimateCharacter- state is:" + state);
+                animator.SetBool(state, true);
+                break;
+            default:
+                Debug.LogError("State Passed in to AnimateCharacter does not correspond to any parameters");
+                break;
+        }
+
+    }
+
     public void GetEnemyAroundPlayer()
     {
         //Debug.Log("Looking for enemies around player");
@@ -550,13 +789,28 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("EndGameFlag"))
+                            {
+                                FinishGame();
+                            }
                             if(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
                             {
                                 // Player reached the stair for the next level
                                 InterimLevelSave();
                                 LoadNextLevel();
                             }
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject.tag.Contains("Item"))
+                            {
+                                // Player is stepping on an item. Automatically pick it up
+                                player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<SpriteRenderer>().enabled = false;
+                                if (item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item)) Debug.Log("Item" + world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<ItemVisuals>().itemName + "removed successfully");
+                                //Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
+                            }
+                            
                             //Debug.Log("Moving Player Up");
+                            AnimateCharacter(player, "WalkUp");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             //world_array[(int)player_loc.Item1, (int)player_loc.Item2].character = null;
@@ -586,13 +840,26 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("EndGameFlag"))
+                            {
+                                FinishGame();
+                            }
                             if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
                             {
                                 // Player reached the stair for the next level
                                 InterimLevelSave();
                                 LoadNextLevel();
                             }
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject.tag.Contains("Item"))
+                            {
+                                // Player is stepping on an item. Automatically pick it up
+                                player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                if (item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item)) Debug.Log("Item" + world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<ItemVisuals>().itemName + "removed successfully");
+                                Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
+                            }
                             Debug.Log("Moving Player Down");
+                            AnimateCharacter(player, "WalkDown");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
@@ -617,13 +884,26 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("EndGameFlag"))
+                            {
+                                FinishGame();
+                            }
                             if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
                             {
                                 // Player reached the stair for the next level
                                 InterimLevelSave();
                                 LoadNextLevel();
                             }
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject.tag.Contains("Item"))
+                            {
+                                // Player is stepping on an item. Automatically pick it up
+                                player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                if (item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item)) Debug.Log("Item" + world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<ItemVisuals>().itemName + "removed successfully");
+                                Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
+                            }
                             Debug.Log("Moving Player Left");
+                            AnimateCharacter(player, "WalkLeft");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
@@ -647,13 +927,26 @@ public class WorldManager : MonoBehaviour
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("Wall") &&
                             !world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character.gameObject.tag.Contains("Enemy"))
                         {
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("EndGameFlag"))
+                            {
+                                FinishGame();
+                            }
                             if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].environment.gameObject.tag.Contains("NextLevelStair"))
                             {
                                 // Player reached the stair for the next level
                                 InterimLevelSave();
                                 LoadNextLevel();
                             }
+                            if (world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.gameObject.tag.Contains("Item"))
+                            {
+                                // Player is stepping on an item. Automatically pick it up
+                                player.GetComponent<InventorySystem>().PickupItem(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                if (item_list.Remove(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item)) Debug.Log("Item" + world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item.GetComponent<ItemVisuals>().itemName + "removed successfully");
+                                Destroy(world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item);
+                                world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].item = EmptyObject;
+                            }
                             Debug.Log("Moving Player Right");
+                            AnimateCharacter(player, "WalkRight");
                             player.transform.position = new Vector2(spawn_location.x + new_player_loc.Item1, spawn_location.y + new_player_loc.Item2);
                             world_array[(int)new_player_loc.Item1, (int)new_player_loc.Item2].character = player;
                             world_array[(int)old_player_loc.Item1, (int)old_player_loc.Item2].character = EmptyObject;
@@ -677,6 +970,7 @@ public class WorldManager : MonoBehaviour
                 {
                     Debug.Log("Gameobject name: " + atk_state.target.gameObject.name);
                     Debug.Log("Target is Player");
+                    AnimateCharacter(player, "Attack");
                     switch (atk_state.move.GetStatAffected())
                     {
                         case "Health":
@@ -698,10 +992,12 @@ public class WorldManager : MonoBehaviour
                     {
                         case "Health":
                             Debug.Log("Enemy Health Affected");
+                            AnimateCharacter(player, "Attack");
                             if (atk_state.target.gameObject.GetComponent<EnemyMovement>().TakeDamage(atk_state.move.GetValue()))
                             {
                                 var tmp_x = atk_state.target.GetComponent<EnemyMovement>().location.Item1;
                                 var tmp_y = atk_state.target.GetComponent<EnemyMovement>().location.Item2;
+                                AnimateCharacter(world_array[(int)tmp_x, (int)tmp_y].character, "Death");
                                 enemy_list.Remove(world_array[(int)tmp_x, (int)tmp_y].character);
                                 Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
                                 world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
@@ -716,6 +1012,7 @@ public class WorldManager : MonoBehaviour
                             // Add more stats later   
                     }
                 }
+
 
                 AttackPanel.SetActive(false);
                 target_enemy_panel.SetActive(false);
@@ -749,6 +1046,10 @@ public class WorldManager : MonoBehaviour
     {
         return enemy_list;
     }
+    public List<GameObject> GetItemList()
+    {
+        return item_list;
+    }
     public string GetDungeonname()
     {
         return dungeon_name;
@@ -770,20 +1071,27 @@ public class WorldManager : MonoBehaviour
     }
     public void LoadEnvironment(string _key, (float, float) _loc)
     {
-        asset_construct.Add(new EnvironmentContruct(_key, _loc));        
+        asset_construct.Add(new EnvironmentConstruct(_key, _loc));        
+    }
+
+    public void LoadItem(string item_name,(float,float) _loc)
+    {
+        item_construct.Add(new ItemConstruct(item_name, _loc));
     }
     public void LoadEnemies(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, string m1, string m2, string m3, string m4)
     {
         enemy_construct.Add(new EnemyConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, m1, m2 , m3, m4));
     }
  
-    public void LoadPlayer(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, float _cur_energy, float _max_energy,string m1, string m2, string m3, string m4)
+    public void LoadPlayer(string _key, float _enemy_x, float _enemy_y, float _cur_hp, float _max_hp, float _cur_energy, float _max_energy,string m1, string m2, string m3, string m4, List<(string,int)> _itemRecord)
     {
-        player_construct = new PlayerConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, _cur_energy, _max_energy, m1, m2, m3, m4);
+        player_construct = new PlayerConstruct(_key, _enemy_x, _enemy_y, _cur_hp, _max_hp, _cur_energy, _max_energy, m1, m2, m3, m4, _itemRecord);
     }
 
     public void PrepareWorld()
     {
+
+        mainMenuPanel.SetActive(false);
         world_array = new WorldElements[x_size, y_size];
         Debug.Log("In Prepare world, x:" + x_size + " & y:" + y_size);
         for (int x = 0; x < x_size; x++)
@@ -794,28 +1102,27 @@ public class WorldManager : MonoBehaviour
             }
         }
     }
-
-    public void ResetWorld()
+    public void DestroyWorld()
     {
         level_loaded = false;
         load_data_ready = false;
-        if(world_array != null)
+        if (world_array != null)
         {
             for (int x = 0; x < x_size; x++)
             {
                 for (int y = 0; y < y_size; y++)
                 {
-                    if(world_array[x,y].character.name != EmptyObject.name)
+                    if (world_array[x, y].character.name != EmptyObject.name)
                     {
                         Destroy(world_array[x, y].character.gameObject);
                         world_array[x, y].character = EmptyObject;
                     }
-                    if(world_array[x,y].environment.name != EmptyObject.name)
+                    if (world_array[x, y].environment.name != EmptyObject.name)
                     {
                         Destroy(world_array[x, y].environment.gameObject);
                         world_array[x, y].environment = EmptyObject;
                     }
-                    if(world_array[x,y].item.name != EmptyObject.name)
+                    if (world_array[x, y].item.name != EmptyObject.name)
                     {
                         Destroy(world_array[x, y].item.gameObject);
                         world_array[x, y].item = EmptyObject;
@@ -823,11 +1130,18 @@ public class WorldManager : MonoBehaviour
                 }
             }
         }
-        
+
         enemy_list.Clear();
         enemy_construct.Clear();
         asset_construct.Clear();
+        item_construct.Clear();
+        if (player != null) ResetInventoryButtons();
         playerDead = false;
+        AttackButton.SetActive(false);
+    }
+    public void ResetWorld()
+    {
+        DestroyWorld();
         PrepareWorld();
     }
 
@@ -981,9 +1295,11 @@ public class WorldManager : MonoBehaviour
                         {
                             float tmp_x = stAttack.target.GetComponent<PlayerMovement>().GetPlayerLocation().Item1;
                             float tmp_y = stAttack.target.GetComponent<PlayerMovement>().GetPlayerLocation().Item2;
+                            AnimateCharacter(world_array[(int)tmp_x, (int)tmp_y].character, "Death");
                             Destroy(world_array[(int)tmp_x, (int)tmp_y].character);
                             world_array[(int)tmp_x, (int)tmp_y].character = EmptyObject;
                             playerDead = true;
+                            gameOverPanel.SetActive(true);
                         }
                         break;
                 }
@@ -1018,6 +1334,7 @@ public class WorldManager : MonoBehaviour
                         // Find Enemy Location
                         new_enemy_loc.Item1 -= 1.0f;
                         // Move enemy to new location;
+                        AnimateCharacter(_Enemy, "WalkLeft");
                         _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
                         world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
                         world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
@@ -1028,6 +1345,7 @@ public class WorldManager : MonoBehaviour
                         // Find Enemy Location
                         new_enemy_loc.Item2 -= 1.0f;
                         // Move enemy to new location;
+                        AnimateCharacter(_Enemy, "WalkDown");
                         _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
                         world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
                         world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
@@ -1038,6 +1356,7 @@ public class WorldManager : MonoBehaviour
                         // Find Enemy Location
                         new_enemy_loc.Item1 += 1.0f;
                         // Move enemy to new location;
+                        AnimateCharacter(_Enemy, "WalkRight");
                         _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
                         world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
                         world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
@@ -1048,6 +1367,7 @@ public class WorldManager : MonoBehaviour
                         // Find Enemy Location
                         new_enemy_loc.Item2 += 1.0f;
                         // Move enemy to new location;
+                        AnimateCharacter(_Enemy, "WalkUp");
                         _Enemy.transform.position = new Vector2(spawn_location.x + new_enemy_loc.Item1, spawn_location.y + new_enemy_loc.Item2);
                         world_array[(int)new_enemy_loc.Item1, (int)new_enemy_loc.Item2].character = _Enemy;
                         world_array[(int)old_enemy_loc.Item1, (int)old_enemy_loc.Item2].character = EmptyObject;
@@ -1059,10 +1379,19 @@ public class WorldManager : MonoBehaviour
         }
     }
 
+    public void UseItemInInventory(string itemName)
+    {
+        player_turn = false;
+        enemy_turn = true;
+        player.GetComponent<InventorySystem>().UseItem(itemName);
+        ResetInventoryButtons();
+        inventoryPanel.SetActive(false);
+    }
+
     public void LoadNextLevel()
     {
         ResetWorld();
-        string defaultSaveFilePath = Application.dataPath + @"\Bootleg_Pokemon\ConfigData\SaveData\interimsaveslot.txt";
+        string defaultSaveFilePath = Application.streamingAssetsPath + "/SaveData/interimsaveslot.txt";
         FileStream fsInterim = File.OpenRead(defaultSaveFilePath);
         StreamReader srInterim = new StreamReader(fsInterim);
 
@@ -1092,13 +1421,46 @@ public class WorldManager : MonoBehaviour
         string move3 = player_moves[2];
         string move4 = player_moves[3];
 
-        LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4);
+        List<(string, int)> inventoryRecord = new List<(string, int)>();
+        saveLine = srInterim.ReadLine();
+        if (saveLine != "PlayerInventory") Debug.LogError("Wrong read in interim save file in LoadNextLevel in WorldManager.cs");
+        Debug.Log("saveLine: " + saveLine);
+        //saveLine = srInterim.ReadLine();
+        while (saveLine != "end-inventory")
+        {
+            saveLine = srInterim.ReadLine();
+            if (saveLine.Contains("Empty"))
+            {
+                break;
+            }
+            else if (saveLine.Contains("Item type"))
+            {
+                saveLine = srInterim.ReadLine();
+
+                while (saveLine != "end-type")
+                {
+                    string[] itemDeets = saveLine.Split(',');
+                    string itemName = itemDeets[0];
+                    int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
+                    inventoryRecord.Add((itemName, itemQuantity));
+                    saveLine = srInterim.ReadLine();
+                }
+            }
+            saveLine = srInterim.ReadLine();
+        }
+
+        foreach(var i in inventoryRecord)
+        {
+            Debug.Log("Item name: " + i.Item1 + " item quantity: " + i.Item2);
+        }
+
+        LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4, inventoryRecord);
 
         fsInterim.Close();
         srInterim.Close();
 
         string filename = GetNextDungeonName();
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\Level\" + filename + ".txt";
+        string path = Application.streamingAssetsPath + "/Level/" + filename + ".txt";
         FileStream fs = File.OpenRead(path);
         StreamReader sr = new StreamReader(fs);
 
@@ -1175,19 +1537,50 @@ public class WorldManager : MonoBehaviour
                 }
             }
         }
+        line = sr.ReadLine();
+        // TODO: Fix reading item in dungeon
+
+        List<ItemData> item_construct = new List<ItemData>();
+        for (int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] item_line = line.Split(' ');
+            for (int x = 0; x < x_size; x++)
+            {
+                if (item_line[x] != "--") item_construct.Add(new ItemData(item_line[x], x, y));
+            }
+        }
+
+        while(line != "end-item")
+        {
+            line = sr.ReadLine();
+            string[] item_line = line.Split(',');
+            for (int i = 0; i < item_construct.Count; i++)
+            {
+                if(item_construct[i].item_Id == item_line[0])
+                {
+                    string itemID = item_line[0];
+                    string itemName = item_line[1];
+                    LoadItem(itemName, (item_construct[i].x,item_construct[i].y));
+                }
+            }
+        }
+
         SetLoadStatusReady();
     }
 
 
     private void InterimLevelSave()
     {
-        string filename = "interimsaveslot";
 
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\SaveData\" + filename + ".txt";
+        string path = Application.streamingAssetsPath + "/SaveData/interimsaveslot.txt";
         using FileStream fs = File.Create(path);
         using var sr = new StreamWriter(fs);
 
-        sr.WriteLine(filename);
+        
+
+        sr.WriteLine("interimsaveslot");
 
         //Save Dungeon Name:
         sr.WriteLine("DungeonName: " + GetNextDungeonName());
@@ -1223,5 +1616,35 @@ public class WorldManager : MonoBehaviour
         }
 
         sr.WriteLine(playermove);
+
+        sr.WriteLine("PlayerInventory");
+        var inventory = player.GetComponent<InventorySystem>().GetInventory();
+
+        //player.GetComponent<InventorySystem>().DebugInventoryContent();
+
+        foreach(var itemType in inventory)
+        {
+            sr.WriteLine("Item type: " + itemType.Item1);
+            foreach(var item in itemType.Item2)
+            {
+                sr.WriteLine(item.GetItem().GetItemName()+ "," + item.GetQuantity());
+
+            }
+            sr.WriteLine("end-type");
+        }
+        
+        if(inventory.Count <= 0)
+        {
+            sr.WriteLine("empty");
+        }
+
+        sr.WriteLine("end-inventory");
+        sr.Close();
+        fs.Close();
+    }
+
+    public void FinishGame()
+    {
+        finishGamePanel.SetActive(true);
     }
 }

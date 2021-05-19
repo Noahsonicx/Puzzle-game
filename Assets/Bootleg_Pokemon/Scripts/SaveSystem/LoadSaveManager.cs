@@ -3,10 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 
 public class LoadSaveManager : MonoBehaviour
-{    
+{
+    public struct ItemData
+    {
+        public string item_Id;
+        public float x;
+        public float y;
+
+        public ItemData(string _id, float _x, float _y)
+        {
+            item_Id = _id;
+            x = _x;
+            y = _y;
+        }
+    }
+
     public struct EnemyData
     {
         public string enemy_ID;
@@ -22,22 +38,68 @@ public class LoadSaveManager : MonoBehaviour
     }
     public GameObject wm_object;
     public WorldManager wm;
+    public CharacterSelectorManager cs;
+
+    // UI stuff for the main menu
+    public GameObject mainMenuPanel;
+    public GameObject loadSavePanel;
+    public GameObject saveErrorPanel;
+    public GameObject startButtonGObj;
+    public Button startButton;
+    public GameObject loadSave1GObj;
+    private Button loadSave1;
+    public GameObject loadSave2GObj;
+    private Button loadSave2;
+    public GameObject loadSave3GObj;
+    private Button loadSave3;
+    public GameObject settingButtonGObj;
+    private Button settingButton;
+    public GameObject exitButtonGObj;
+    private Button exitButton;
+
     // Start is called before the first frame update
     void Start()
     {
         wm = wm_object.GetComponent<WorldManager>();
+
+        startButton = startButtonGObj.GetComponent<Button>();
+        loadSave1 = loadSave1GObj.GetComponent<Button>();
+        loadSave2 = loadSave2GObj.GetComponent<Button>();
+        loadSave3 = loadSave3GObj.GetComponent<Button>();
+        settingButton = settingButtonGObj.GetComponent<Button>();
+        exitButton = exitButtonGObj.GetComponent<Button>();
+
+        loadSave1.onClick.AddListener(delegate { LoadSaveController("saveslot1"); });
+        loadSave2.onClick.AddListener(delegate { LoadSaveController("saveslot2"); });
+        loadSave3.onClick.AddListener(delegate { LoadSaveController("saveslot3"); });
+
+        
     }
 
-    // Update is called once per frame
-    void Update()
+    public void LoadSaveController(string filename)
     {
+        Debug.Log(Application.dataPath);
+        string path = Application.streamingAssetsPath + "/SaveData/" + filename + ".txt";
+        if (!File.Exists(path))
+        {
+            saveErrorPanel.SetActive(true);
+            saveErrorPanel.GetComponentInChildren<TextMeshProUGUI>().text = filename + " is empty";
+
+        }
+        else if(LoadFromSave(filename))
+        {
+            loadSavePanel.SetActive(false);
+        }
+        return;
 
     }
 
-    public void LoadFromSave(string filename)
+    public bool LoadFromSave(string filename)
     {
         wm.ResetWorld();
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\SaveData\" + filename + ".txt";
+        string path = Application.streamingAssetsPath + "/SaveData/" + filename + ".txt";
+        if (!File.Exists(path)) return false;
+
         using FileStream fs = File.OpenRead(path);
         using var sr = new StreamReader(fs);
         
@@ -101,16 +163,51 @@ public class LoadSaveManager : MonoBehaviour
         string move3 = player_moves[2];
         string move4 = player_moves[3];
 
-        wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4);
+        List<(string, int)> inventoryRecord = new List<(string, int)>();
+        line = sr.ReadLine();
+        if (line != "PlayerInventory") Debug.LogError("Wrong read in LoadFromSave in LoadSaveManager.cs");
+        line = sr.ReadLine();
+        while (line != "end-inventory")
+        {
+            while (line != "end-type")
+            {
+                if (line.Contains("empty")) break;
+                if (line.Contains("Item type")) line = sr.ReadLine();
+                Debug.Log("Line: " + line);
+                string[] itemDeets = line.Split(',');
+                string itemName = itemDeets[0];
+                int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
+                inventoryRecord.Add((itemName, itemQuantity));
+                line = sr.ReadLine();
+            }
+            line = sr.ReadLine();
+        }
+        Debug.Log("Finished Loading from Save");
+        wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4, inventoryRecord);
+
+        line = sr.ReadLine();
+        if (line != "ItemOnLevel") Debug.LogError("Text Differs for: " + line);
+        line = sr.ReadLine();
+        while (line != "end-item")
+        {
+            if (line.Contains("No")) break;
+            string[] item_details = line.Split(',');
+            string itemName = item_details[0];
+            float item_x = float.Parse(item_details[1], CultureInfo.InvariantCulture.NumberFormat);
+            float item_y = float.Parse(item_details[2], CultureInfo.InvariantCulture.NumberFormat);
+            wm.LoadItem(itemName, (item_x, item_y));
+            line = sr.ReadLine();
+        }
 
         wm.SetLoadStatusReady();
+        return true;
     }
 
     public void LoadNextLevel()
     {
         wm.ResetWorld();
         string filename = wm.GetNextDungeonName();
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\Level\" + filename + ".txt";
+        string path = Application.streamingAssetsPath + "/SaveData/" + filename + ".txt";
         FileStream fs = File.OpenRead(path);
         StreamReader sr = new StreamReader(fs);
 
@@ -187,13 +284,45 @@ public class LoadSaveManager : MonoBehaviour
                 }
             }
         }
+        
+        List<ItemData> item_construct = new List<ItemData>();
+        for (int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] item_line = line.Split(' ');
+            int line_index = 0;
+            for (int x = 0; x < x_size; x++)
+            {
+                if (item_line[line_index] != "--") item_construct.Add(new ItemData(item_line[line_index], x, y));
+                line_index++;
+            }
+        }
+
+        while (line != "end-item")
+        {
+            line = sr.ReadLine();
+            string[] item_line = line.Split(',');
+            for (int i = 0; i < item_construct.Count; i++)
+            {
+                if (item_construct[i].item_Id == item_line[0])
+                {
+                    string itemID = item_line[0];
+                    string itemName = item_line[1];
+                    wm.LoadItem(itemName, (item_construct[i].x, item_construct[i].y));
+                }
+            }
+        }
         wm.SetLoadStatusReady();
-        // TODO: Item Construct depending on how inventory is implemented.
     }
-    public void LoadStartLevel(string filename) 
+    public void StartGame()
     {
-        wm.ResetWorld();
-        string defaultSaveFilePath = Application.dataPath + @"\Bootleg_Pokemon\ConfigData\SaveData\saveslot0.txt";
+        cs.Run();
+    }
+    public void LoadStartLevel() 
+    {
+        //wm.ResetWorld();
+        string defaultSaveFilePath = Application.streamingAssetsPath + "/SaveData/saveslot0.txt";
         FileStream fs = File.OpenRead(defaultSaveFilePath);
         StreamReader sr = new StreamReader(fs);
 
@@ -223,25 +352,49 @@ public class LoadSaveManager : MonoBehaviour
         string move3 = player_moves[2];
         string move4 = player_moves[3];
 
-        wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4);
+        List<(string, int)> inventoryRecord = new List<(string, int)>();
+        saveLine = sr.ReadLine();
+        if (saveLine != "PlayerInventory") Debug.LogError("Wrong read in interim save file in LoadStartLevel in WorldManager.cs");
+        saveLine = sr.ReadLine();
+        while (saveLine != "end-inventory")
+        {
+            
+            while (saveLine != "end-type" && saveLine != "end-inventory")
+            {
+                string[] itemDeets = saveLine.Split(',');
+                string itemName = itemDeets[0];
+                int itemQuantity = int.Parse(itemDeets[1], CultureInfo.InvariantCulture.NumberFormat);
+                inventoryRecord.Add((itemName, itemQuantity));
+                saveLine = sr.ReadLine();
+            }
+            saveLine = sr.ReadLine();
+        }
 
+        wm.LoadPlayer(player_elemont, player_x, player_y, player_cur_hp, player_max_hp, player_cur_energy, player_max_energy, move1, move2, move3, move4, inventoryRecord);
         fs.Close();
         sr.Close();
 
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\Level\" + currentDungeon + ".txt";
+        Debug.Log("Finished loading player. Loading dungeon level now");
+
+        string path = Application.streamingAssetsPath + "/Level/" + currentDungeon + ".txt";
         FileStream fs_dungeon = File.OpenRead(path);
         StreamReader sr_dungeon = new StreamReader(fs_dungeon);
+
+        Debug.Log("srDungeon is:" + sr_dungeon);
+        //FileStream fs_dungeon = (File)Resources.Load(currentDungeon + ".txt");
 
         //Debug.Log("Finished Resetting World and opening filestream");
 
         string line = sr_dungeon.ReadLine();
         wm.SetDungeonName(line.Substring(line.IndexOf(": ") + 2)); // Get Current Dungeon Name
-       
-        line = sr_dungeon.ReadLine();
-        wm.SetNextDungeonName(line.Substring(line.IndexOf(": ") + 2)); // Get Next Dungeon Name
-        //Debug.Log("dim substring: " + dimension_substring);
+     
 
         line = sr_dungeon.ReadLine();
+        wm.SetNextDungeonName(line.Substring(line.IndexOf(": ") + 2)); // Get Next Dungeon Name
+ 
+
+        line = sr_dungeon.ReadLine();
+
         string dimension_substring = line.Substring(line.IndexOf(": ") + 2); // Get Dungeon Dimention
         string[] dimension = dimension_substring.Split(',');
         int x_size = int.Parse(dimension[0], CultureInfo.InvariantCulture.NumberFormat);
@@ -253,6 +406,7 @@ public class LoadSaveManager : MonoBehaviour
         for (int y = y_size - 1; y >= 0; y--)
         {
             line = sr_dungeon.ReadLine();
+          
             Debug.Log("Line is: " + line);
             string[] asset_line = line.Split(' ');
             int line_index = 0;
@@ -264,13 +418,13 @@ public class LoadSaveManager : MonoBehaviour
         }
 
         line = sr_dungeon.ReadLine();
-        if (line != "end-dungeon") Debug.LogError("Load Level Over-Read dungeon layout in file: " + filename + ".txt");
 
         line = sr_dungeon.ReadLine();
         List<EnemyData> enemy_construct = new List<EnemyData>();
         for (int y = y_size - 1; y >= 0; y--)
         {
             line = sr_dungeon.ReadLine();
+
             Debug.Log("Line is: " + line);
             string[] enemy_line = line.Split(' ');
             int line_index = 0;
@@ -281,13 +435,15 @@ public class LoadSaveManager : MonoBehaviour
             }
         }
         line = sr_dungeon.ReadLine();
+     
         line = sr_dungeon.ReadLine();
-        if (line != "EnemiesStatistics") Debug.Log("Load Level Over-Read enemy layout in file: " + filename + ".txt");
+     
         Debug.Log("Line is: " + line);
 
         while (line != "end-enemy")
         {
             line = sr_dungeon.ReadLine();
+            
             string[] enemy_line = line.Split(',');
             for (int i = 0; i < enemy_construct.Count; i++)
             {
@@ -304,12 +460,48 @@ public class LoadSaveManager : MonoBehaviour
                 }
             }
         }
+        line = sr_dungeon.ReadLine();
+
+        List<ItemData> item_construct = new List<ItemData>();
+        for (int y = y_size - 1; y >= 0; y--)
+        {
+            line = sr_dungeon.ReadLine();
+            Debug.Log("Line is: " + line);
+            string[] item_line = line.Split(' ');
+            for (int x = 0; x < x_size; x++)
+            {
+                if (item_line[x] != "--")
+                {
+                    item_construct.Add(new ItemData(item_line[x], x, y));
+                    Debug.Log("When item_line: " + item_line[x] + "x/y: " + x + "/" + y);
+                }
+            }
+        }
+
+        while (line != "end-item")
+        {
+            line = sr_dungeon.ReadLine();
+      
+            Debug.Log("Line after for is: " + line);
+            string[] item_line = line.Split(',');
+            for (int i = 0; i < item_construct.Count; i++)
+            {
+                Debug.Log("itemId in itemconstruct / in itemLine[0]" + item_construct[i] + " / " + item_line[0]);
+                if (item_construct[i].item_Id == item_line[0])
+                {
+                    string itemID = item_line[0];
+                    string itemName = item_line[1];
+                    wm.LoadItem(itemName, (item_construct[i].x, item_construct[i].y));
+                }
+            }
+        }
+
         wm.SetLoadStatusReady();
-        // TODO: Item Construct depending on how inventory is implemented.
+
     }
     public void LoadLevelForSave(string level_name)
     {
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\Level\" + level_name + ".txt";
+        string path = Application.streamingAssetsPath + "/Level/" + level_name + ".txt";
         FileStream fs = File.OpenRead(path);
         StreamReader sr = new StreamReader(fs);
 
@@ -345,5 +537,20 @@ public class LoadSaveManager : MonoBehaviour
         line = sr.ReadLine();
         if (line != "end-dungeon") Debug.LogError("Load Level Over-Read in file: " + level_name + ".txt");
     }
+    
 
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    public void DeleteSave()
+    {
+        string[] save = { "saveslot1", "saveslot2", "saveslot3" };
+        foreach(string s in save)
+        {
+            string path = Application.streamingAssetsPath + "/SaveData/" + s + ".txt";
+            if (File.Exists(path)) File.Delete(path);
+        }
+    }
 }

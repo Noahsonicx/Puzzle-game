@@ -71,7 +71,7 @@ public class EnemyMovement : MonoBehaviour
     }
     public void SetText()
     {
-        GetComponent<Elemontals>().ChangeText(current_health + "/" + max_health);
+        GetComponent<Elemontals>().ChangeHealthText(current_health + "/" + max_health);
     }
     public bool TakeDamage(float dmg)
     {
@@ -190,7 +190,22 @@ public class EnemyMovement : MonoBehaviour
                     {
                         //Debug.Log("Player is in range");
                         // Will attack player unless otherwise stated.
-
+                        Debug.Log("Broken here:" + this.gameObject.name);
+                        if (attacks == null) Debug.Log("enemy attack set is null");
+                        else 
+                        {
+                            int tmpIndex = 1;
+                            foreach(Moveset m in attacks)
+                            {
+                                tmpIndex++;
+                                if(m != null)
+                                {
+                                    Debug.Log("Moveset empty");
+                                }
+                            }
+                                Debug.Log("attack count: " + tmpIndex);
+                        }
+                        
                         Moveset move = attacks[(int)Random.Range(0, 3)];
                         Debug.Log("Move is:" + move.GetMoveName());
                         State st = new Attack(FindObjectOfType<PlayerMovement>().gameObject, move);

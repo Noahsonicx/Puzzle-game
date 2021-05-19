@@ -1,0 +1,46 @@
+Dungeon Name: SmallLevelThree
+Next Dungeon Name: SmallLevelFour
+Dungeon Size: 10,10
+g2 g2 g2 g2 g2 g2 g2 g2 g2 g2
+g2 g4 g2 g2 g2 g2 g2 g2 g2 g2 
+g2 g2 g2 g4 g2 g2 g2 g2 g2 g2
+w1 w1 w1 w1 w1 w1 w1 w1 w1 w1
+i6 s0 g0 g0 g1 g1 g1 g0 i6 i6 
+i6 i6 g0 g0 g1 g1 g1 g0 n0 i6
+w0 w0 w0 w0 w0 w0 w0 w0 w0 w0
+g2 g2 g2 g2 g2 g2 g2 g2 g2 g2
+g2 g4 g2 g2 g2 g4 g2 g2 g2 g2
+g2 g2 g2 g2 g2 g2 g2 g2 g2 g2
+end-dungeon
+Enemies on Level
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+end-enemy-loc
+EnemiesStatistics
+end-enemy
+Items on level
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- i3 i2 i1 -- -- -- -- 
+-- -- -- i4 i5 i6 -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+i1,HealthPotion
+i2,EnergyPotion
+i3,HealthPotion
+i4,EnergyPotion
+i5,HealthPotion
+i6,EnergyPotion
+end-item

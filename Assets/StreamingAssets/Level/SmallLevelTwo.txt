@@ -1,0 +1,48 @@
+Dungeon Name: SmallLevelTwo
+Next Dungeon Name: SmallLevelThree
+Dungeon Size: 10,10
+w5 w1 w7 g2 w5 w1 w1 w1 w1 w7
+w2 s0 i5 g2 i4 n0 g0 g0 g0 w3 
+w2 g0 i5 g2 i4 i6 i6 g0 g0 w3
+w2 g1 i5 g2 i4 g0 g0 g0 g0 w3
+w2 g0 i0 w1 i2 g0 g0 g0 g0 w3 
+w2 g1 g0 g0 g0 g0 g0 g0 g0 w3
+w2 g0 g0 g0 g1 g1 g0 g0 g0 w3
+w2 g0 g0 g0 g1 g1 g0 g0 g0 w3
+w2 g0 g0 g0 g0 g0 g0 g0 g0 w3
+w4 w0 w0 w0 w0 w0 w0 w0 w0 w6
+end-dungeon
+Enemies on Level
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- e2 -- -- -- -- -- -- --
+-- -- e1 -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+end-enemy-loc
+EnemiesStatistics
+e1,Ferirama,15,15,Fire Dance,Fire Blast,Blaze,Blaze
+e2,Aloidia,15,15,Earth Tomb,Plate Shot,Rock Barrage,Rock Barrage
+end-enemy
+Items on level
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- i5 -- -- -- -- -- -- -- --
+-- i6 -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- i1 -- -- -- i4 -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- i3 -- -- i2 -- -- --
+-- -- -- -- -- -- -- -- -- --
+i1,HealthPotion
+i2,EnergyPotion
+i3,HealthPotion
+i4,EnergyPotion
+i5,HealthPotion
+i6,EnergyPotion
+end-item

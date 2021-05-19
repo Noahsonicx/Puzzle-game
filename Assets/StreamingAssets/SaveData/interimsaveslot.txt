@@ -1,0 +1,11 @@
+interimsaveslot
+DungeonName: SmallLevelTwo
+PlayerStatistics:
+Aloidia,-1,-1,35,50,25,25
+PlayerMoveset:
+Blaze,Blaze,Blaze,Blaze
+PlayerInventory
+Item type: Consumable
+HealthPotion,1
+end-type
+end-inventory

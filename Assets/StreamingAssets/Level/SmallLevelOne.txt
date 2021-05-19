@@ -1,0 +1,45 @@
+Dungeon Name: SmallLevelOne
+Next Dungeon Name: SmallLevelTwo
+Dungeon Size: 10,10
+w5 w1 w1 w1 w7 g2 w5 w1 w1 w7
+w2 g0 g0 g0 i5 g2 i4 g0 g0 w3 
+w2 g0 i6 g0 i0 w1 i2 g0 g0 w3
+w2 g0 i6 g0 g1 i6 g0 g0 g0 w3
+w2 g0 i6 g1 g0 g1 g0 g0 g0 w3 
+w2 g0 i6 g0 g1 i6 g0 g0 g0 w3
+w2 g0 i6 g0 i1 w0 w0 i3 g0 w3
+w2 g0 g0 g1 i5 g2 g2 i4 g0 w3
+w2 n0 g1 g0 i5 g2 g3 i4 s0 w3
+w4 w0 w0 w0 w6 g2 g2 w4 w0 w6
+end-dungeon
+Enemies on Level
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- e3 --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- e1 -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- e2 -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+end-enemy-loc
+EnemiesStatistics
+e1,Naiad,15,15,Ice Wall,Ice Shot,Water Whip,Water Whip
+e2,Aloidia,15,15,Earth Tomb,Plate Shot,Rock Barrage,Rock Barrage
+e3,Kizerain,15,15,Air Sphere Shot,Air Bubble,Fury Wind,Fury Wind
+end-enemy
+Items on level
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- i1 -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- i2 -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+i1,HealthPotion
+i2,EnergyPotion
+end-item

@@ -9,6 +9,8 @@ public class SaveManager : MonoBehaviour
 {
     public GameObject wm_object;
     public WorldManager wm;
+    public ElemontalAssetsDictionaryManager elemontalDictionary;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,7 +25,7 @@ public class SaveManager : MonoBehaviour
     // Save the state of the player
     public void Save(string filename)
     {
-        string path = @"..\Bootleg_Pokemon\Assets\Bootleg_Pokemon\ConfigData\SaveData\" + filename + ".txt";    
+        string path = Application.streamingAssetsPath + "/SaveData/" + filename + ".txt";    
         using FileStream fs = File.Create(path);
         using var sr = new StreamWriter(fs);
 
@@ -88,6 +90,99 @@ public class SaveManager : MonoBehaviour
 
         sr.WriteLine(playermove);
 
+        sr.WriteLine("PlayerInventory");
+
         // Save Player Inventory (TODO: Once player inventory has been implemented)
+
+        var inventory = player.GetComponent<InventorySystem>().GetInventory();
+
+        //player.GetComponent<InventorySystem>().DebugInventoryContent();
+
+        for(int i = 0; i < inventory.Count; i++)
+        {
+            sr.WriteLine("Item type:" + inventory[i].Item1);
+            for(int z = 0; z < inventory[i].Item2.Count;z++)
+            {
+                sr.WriteLine(inventory[i].Item2[z].GetItem().GetItemName() + "," + inventory[i].Item2[z].GetQuantity());
+            }
+            sr.WriteLine("end-type");
+        }
+
+        if(inventory.Count <= 0)
+        {
+            sr.WriteLine("empty");
+        }
+        sr.WriteLine("end-inventory");
+
+        sr.WriteLine("ItemOnLevel");
+
+        var itemList = wm.GetItemList();
+
+
+        foreach(var item in itemList)
+        {
+            if(item != null)
+            {
+                ItemVisuals tmp = item.GetComponent<ItemVisuals>();
+                sr.WriteLine(tmp.GetItemName() + "," + tmp.GetLocation().Item1 + "," + tmp.GetLocation().Item2);
+            }
+        }
+        if (itemList.Count <= 0) sr.WriteLine("No more Item in Level");
+
+        sr.WriteLine("end-item");
+    }
+
+    public void SaveStartFile(string element)
+    {
+        string elemontalName = "";
+        switch(element)
+        {
+            case "Fire":
+                elemontalName = "Ferirama";
+                break;
+            case "Water":
+                elemontalName = "Naiad";
+                break;
+            case "Earth":
+                elemontalName = "Aloidia";
+                break;
+            case "Air":
+                elemontalName = "Kizerain";
+                break;
+        }
+
+        string filename = "saveslot0";
+        string path = Application.streamingAssetsPath + "/SaveData/"  + filename + ".txt";
+        using FileStream fs = File.Create(path);
+        using var sr = new StreamWriter(fs);
+
+        sr.WriteLine(filename);
+        Elemontals elemontalPicked = elemontalDictionary.GetAsset(elemontalName).GetComponent<Elemontals>();
+        //Save Dungeon Name:
+        sr.WriteLine("DungeonName: SmallLevelOne"); // Change here if starting dungeon is different
+
+        //Save PlayerStats
+        sr.WriteLine("PlayerStatistics:");
+
+        string player_stats = "";
+        player_stats += elemontalName; //ElemontalName
+        player_stats += ",-1,-1"; 
+        player_stats += "," + elemontalPicked.GetHealth() + "," + elemontalPicked.GetHealth();
+        player_stats += "," + elemontalPicked.GetEnergy() + "," + elemontalPicked.GetEnergy();
+        Debug.Log(player_stats);
+        sr.WriteLine(player_stats);
+
+
+        elemontalDictionary.GetAsset(elemontalName);
+        sr.WriteLine("PlayerMoveset:");
+
+        string playermove = elemontalDictionary.GetAsset(elemontalName).GetComponent<Elemontals>().GetStartingMoves(); 
+        
+        sr.WriteLine(playermove);
+
+        // Save Player Inventory (TODO: Once player inventory has been implemented)
+
+        sr.WriteLine("PlayerInventory");
+        sr.WriteLine("end-inventory");
     }
 }

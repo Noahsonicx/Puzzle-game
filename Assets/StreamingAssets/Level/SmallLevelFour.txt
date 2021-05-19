@@ -1,0 +1,42 @@
+Dungeon Name: SmallLevelFour
+Next Dungeon Name: SmallLevelFive
+Dungeon Size: 10,10
+w5 w1 w1 w1 w1 w1 w1 w1 w1 w7
+w2 s0 g0 g0 g0 g0 g0 g0 g0 w3 
+w2 g0 i6 g0 i6 g0 i6 g0 i6 w3
+w2 g0 g0 g0 g0 g0 g0 g0 g0 w3
+w2 i6 g0 i6 g0 i6 g0 i6 g0 w3 
+w2 g0 g0 g0 g0 g0 g0 g0 g0 w3
+w2 g0 i6 g0 i6 g0 i6 g0 i6 w3
+w2 g0 g0 g0 g0 g0 g0 g0 g0 w3
+w2 g0 g0 g0 g0 g0 g0 g0 n0 w3
+w4 w0 w0 w0 w0 w0 w0 w0 w0 w6
+end-dungeon
+Enemies on Level
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- e1 -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+end-enemy-loc
+EnemiesStatistics
+e1,Naiad,40,40,Ice Shot,Ice Wall,Tidal Wave,Water Whip
+end-enemy
+Items on level
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- --
+No Item on Level
+end-item

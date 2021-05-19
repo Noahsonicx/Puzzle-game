@@ -36,36 +36,19 @@ public class Elemontals : MonoBehaviour
     {
         return energyPoints;
     }
-    public void ChangeText(string _text)
+    public void ChangeHealthText(string _text)
     {
         health_text.text = _text;
     }
+    public void ChangeEnergyText(string _text)
+    {
+        energy_text.text = _text;
+    }
     public string GetStartingMoves()
     {
-        string moveLine = "";
-        int numStartMoves = startingAbilities.Count;
-        bool first = true;
-        foreach(string abilities in startingAbilities)
-        {
-            if(first)
-            {
-                moveLine += abilities;
-                first = false;
-            }
-            else
-            {
-                moveLine +=  "," + abilities;
-            }
-        }
 
-        if(numStartMoves < 4)
-        {
-            int numEmptyMoves = 4 - numStartMoves;
-            while (numEmptyMoves != 0)
-            {
-                moveLine += "," + "Empty";
-            }
-        }
+        string moveLine = "";
+        moveLine += startingAbilities[0] + "," + startingAbilities[1] + "," + startingAbilities[2] + "," + startingAbilities[3];
 
         return moveLine;
     }

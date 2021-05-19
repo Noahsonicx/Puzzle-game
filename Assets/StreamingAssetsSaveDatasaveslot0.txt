@@ -1,0 +1,8 @@
+saveslot0
+DungeonName: SmallLevelOne
+PlayerStatistics:
+Aloidia,-1,-1,50,50,25,25
+PlayerMoveset:
+Blaze,Blaze,Blaze,Blaze
+PlayerInventory
+end-inventory

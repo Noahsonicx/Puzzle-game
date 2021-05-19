@@ -1,0 +1,36 @@
+Dungeon Name: Trial
+Next Dungeon Name: Trial2
+Dungeon Size: 7,7
+w5 w1 w1 w1 w1 w7 g2
+w2 g0 g0 g0 g0 i5 g2
+w2 g0 g0 i6 g0 i5 g2
+w2 g0 g0 g0 g0 i0 w7
+w2 g1 g1 g1 g1 s0 i5
+w2 n0 g0 g0 g0 i1 w6
+w4 w0 w0 w0 w0 w6 g3
+end-dungeon
+Enemies on Level
+-- -- -- -- -- -- -- 
+-- e1 -- -- e2 -- -- 
+-- -- e3 -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+end-enemy-loc
+EnemiesStatatistics
+e1,Ferirama,15,15,Blaze,Fullever Blaze,Blaze,Blaze
+e2,Naiad,15,15,Water Whip,Water Whip,Water Whip,Ice Shot
+e3,Aloidia,15,15,Earth Tomb,Plate Shot,Pound,Pound
+end-enemy
+Items on level
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- i1 i2 -- -- -- -- 
+-- -- -- -- -- -- -- 
+-- -- -- -- -- -- -- 
+i1,HealthPotion
+i2,EnergyPotion
+end-item

@@ -1,0 +1,8 @@
+saveslot0
+DungeonName: SmallLevelOne
+PlayerStatistics:
+Kizerain,-1,-1,35,35,25,25
+PlayerMoveset:
+Blaze,Blaze,Blaze,Blaze
+PlayerInventory
+end-inventory
